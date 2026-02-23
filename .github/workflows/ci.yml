@@ -53,7 +53,7 @@ jobs:
 
       - name: Setup Node.js
         if: steps.pm.outputs.manager != 'bun'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: .node-version
           cache: ${{ steps.pm.outputs.manager }}
