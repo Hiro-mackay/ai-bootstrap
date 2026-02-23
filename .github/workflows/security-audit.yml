@@ -1,0 +1,113 @@
+name: Security Audit
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Every Monday at 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-scan:
+    name: Dependency Vulnerabilities
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: node
+            file: package.json
+          - name: go
+            file: go.mod
+          - name: python
+            file: requirements.txt
+          - name: rust
+            file: Cargo.toml
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if ${{ matrix.name }} project
+        id: check
+        run: |
+          if [[ -f "${{ matrix.file }}" ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Node.js audit
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'node'
+        run: |
+          if [[ -f package-lock.json ]]; then
+            npm audit --audit-level=high || true
+          elif [[ -f yarn.lock ]]; then
+            npx yarn-audit-fix --audit-level high || true
+          elif [[ -f pnpm-lock.yaml ]]; then
+            npx pnpm audit --audit-level high || true
+          fi
+
+      - name: Go vulnerability check
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./... || true
+
+      - name: Python safety check
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'python'
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt || true
+
+      - name: Rust audit
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'rust'
+        run: |
+          cargo install cargo-audit
+          cargo audit || true
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect language for CodeQL
+        id: lang
+        run: |
+          LANGS=""
+          if [[ -f package.json ]]; then LANGS="javascript-typescript"; fi
+          if [[ -f go.mod ]]; then
+            [[ -n "$LANGS" ]] && LANGS="$LANGS,"
+            LANGS="${LANGS}go"
+          fi
+          if [[ -f requirements.txt || -f pyproject.toml ]]; then
+            [[ -n "$LANGS" ]] && LANGS="$LANGS,"
+            LANGS="${LANGS}python"
+          fi
+          if [[ -z "$LANGS" ]]; then LANGS="javascript-typescript"; fi
+          echo "languages=$LANGS" >> "$GITHUB_OUTPUT"
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ steps.lang.outputs.languages }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3

@@ -1,0 +1,37 @@
+# CODEOWNERS - Define code ownership for automated PR review assignment
+#
+# Each line is a file pattern followed by one or more owners.
+# The last matching pattern takes precedence.
+#
+# Owners can be @username, @org/team-name, or email addresses.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# How to customize:
+#   1. Replace @your-org/team with your actual GitHub org/team or username
+#   2. Add patterns for your project structure
+#   3. More specific patterns should come after general ones
+
+# Default owner for everything
+* @your-org/maintainers
+
+# Examples (uncomment and customize):
+#
+# Documentation
+# /docs/ @your-org/docs-team
+# *.md @your-org/docs-team
+#
+# CI/CD configuration
+# /.github/ @your-org/platform-team
+#
+# Frontend
+# /src/components/ @your-org/frontend-team
+# /src/pages/ @your-org/frontend-team
+#
+# Backend / API
+# /src/api/ @your-org/backend-team
+# /src/server/ @your-org/backend-team
+#
+# Infrastructure
+# /infra/ @your-org/infra-team
+# /terraform/ @your-org/infra-team
+# Dockerfile @your-org/infra-team

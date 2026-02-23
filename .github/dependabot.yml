@@ -1,0 +1,72 @@
+version: 2
+
+updates:
+  # Keep GitHub Actions up to date
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps):"
+    labels:
+      - dependencies
+      - github-actions
+    open-pull-requests-limit: 5
+
+  # Node.js / npm dependencies
+  # Uncomment if your project uses package.json
+  # - package-ecosystem: npm
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #     day: monday
+  #   commit-message:
+  #     prefix: "chore(deps):"
+  #   labels:
+  #     - dependencies
+  #   open-pull-requests-limit: 10
+  #   groups:
+  #     dev-dependencies:
+  #       dependency-type: development
+  #     production-dependencies:
+  #       dependency-type: production
+
+  # Go modules
+  # Uncomment if your project uses go.mod
+  # - package-ecosystem: gomod
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #     day: monday
+  #   commit-message:
+  #     prefix: "chore(deps):"
+  #   labels:
+  #     - dependencies
+  #   open-pull-requests-limit: 10
+
+  # Python / pip dependencies
+  # Uncomment if your project uses requirements.txt or pyproject.toml
+  # - package-ecosystem: pip
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #     day: monday
+  #   commit-message:
+  #     prefix: "chore(deps):"
+  #   labels:
+  #     - dependencies
+  #   open-pull-requests-limit: 10
+
+  # Rust / Cargo dependencies
+  # Uncomment if your project uses Cargo.toml
+  # - package-ecosystem: cargo
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #     day: monday
+  #   commit-message:
+  #     prefix: "chore(deps):"
+  #   labels:
+  #     - dependencies
+  #   open-pull-requests-limit: 10
