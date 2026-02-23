@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Glob, Bash
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # New Spec
@@ -10,23 +10,26 @@ Create a new feature spec using the SDD workflow.
 
 1. Ask the user for a feature name and brief description.
 
-2. Convert the feature name to a slug (lowercase, hyphens, no special characters).
+2. Research the codebase with Explore subagents: find existing patterns, affected files, related code. Summarize findings before proceeding.
 
-3. Create the spec directory: `docs/specs/{{FEATURE_SLUG}}/`
+3. Convert the feature name to a slug (lowercase, hyphens, no special characters).
 
-4. Copy templates into the directory:
+4. Create the spec directory: `docs/specs/{{FEATURE_SLUG}}/`
+
+5. Copy templates into the directory:
    - Read `docs/specs/_templates/spec.md` and write to `docs/specs/{{FEATURE_SLUG}}/spec.md`
    - Read `docs/specs/_templates/plan.md` and write to `docs/specs/{{FEATURE_SLUG}}/plan.md`
    - Read `docs/specs/_templates/tasks.md` and write to `docs/specs/{{FEATURE_SLUG}}/tasks.md`
 
-5. Replace `{{FEATURE_NAME}}` with the actual feature name in all three files.
+6. Replace `{{FEATURE_NAME}}` with the actual feature name in all three files.
    Replace `{{FEATURE_SLUG}}` with the actual slug in plan.md and tasks.md.
 
-6. Guide the user through filling in the spec:
-   - Start with the Problem Statement
-   - Then User Stories with acceptance criteria
-   - Then Functional and Non-Functional Requirements
-   - Then Boundaries
-   - Mark anything unclear as [NEEDS CLARIFICATION]
+7. Interview the user to fill in the spec. Use AskUserQuestion to surface ambiguities:
+   - Problem Statement: what problem, why now?
+   - User Stories with acceptance criteria (Given/When/Then)
+   - Edge cases and tradeoffs the user may not have considered
+   - Functional and Non-Functional Requirements
+   - Boundaries (Always / Ask First / Never)
+   - Mark anything unresolved as [NEEDS CLARIFICATION]
 
-7. After the spec is filled in, ask if the user wants to proceed to the plan.
+8. After the spec is filled in, ask if the user wants to proceed to the plan.

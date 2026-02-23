@@ -39,17 +39,21 @@ Store as `$PROJECT_DESCRIPTION`
 
 ## Step 4: Apply Configuration
 
-Replace placeholders across the project:
+Replace placeholders using the Edit tool.
 
-1. **CLAUDE.md**: Replace `{{PROJECT_NAME}}` with `$PROJECT_NAME`
-2. **CLAUDE.md**: Replace `{{TECH_STACK}}` with `$TECH_STACK`
-3. **CLAUDE.md**: Replace `{{PROJECT_DESCRIPTION}}` with `$PROJECT_DESCRIPTION`
-4. **docs/architecture.md**: Replace `{{PROJECT_NAME}}` with `$PROJECT_NAME`
-5. **docs/architecture.md**: Replace `{{TECH_STACK}}` with `$TECH_STACK`
-6. **README.md**: Replace `{{PROJECT_NAME}}` with `$PROJECT_NAME`
-7. **README.md**: Replace `{{PROJECT_DESCRIPTION}}` with `$PROJECT_DESCRIPTION`
+**CLAUDE.md:**
+1. Replace `{{PROJECT_NAME}}` with `$PROJECT_NAME`
+2. Replace `{{TECH_STACK}}` with `$TECH_STACK`
+3. Replace `{{PROJECT_DESCRIPTION}}` with `$PROJECT_DESCRIPTION`
 
-Use the Edit tool to perform each replacement.
+**README.md:**
+4. Replace the title "AI-Native Development Bootstrap" with `$PROJECT_NAME`
+5. Update the description paragraph to match the project
+
+**docs/architecture.md:**
+6. Replace `{{SYSTEM_OVERVIEW}}` with a brief system description based on the tech stack
+7. Replace `{{COMPONENT_ARCHITECTURE}}` with initial component list based on the stack
+8. Fill in the Technology Stack table (`{{LANG}}`, `{{FW}}`, `{{DB}}`, `{{INFRA}}`, `{{CICD}}`)
 
 ## Step 5: Constitution Review
 
@@ -59,12 +63,10 @@ Show the user the current contents of `docs/constitution.md` and ask:
 
 If yes, help them edit `docs/constitution.md` with their changes.
 
-## Step 6: Architecture Setup
+## Step 6: First ADR
 
-Based on the chosen tech stack, update `docs/architecture.md`:
-- Fill in appropriate layer descriptions for the chosen stack
-- Add relevant technology-specific sections
-- Set up ADR template with the first decision (tech stack choice)
+Create `docs/decisions/001-tech-stack.md` from the `000-template.md` template.
+Record the tech stack choice as the first Architecture Decision Record.
 
 ## Step 7: Finalize
 
