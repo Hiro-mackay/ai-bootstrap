@@ -20,7 +20,7 @@ jobs:
       python: ${{ steps.check.outputs.python }}
       rust: ${{ steps.check.outputs.rust }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Detect project language
         id: check
@@ -36,7 +36,7 @@ jobs:
     if: needs.detect.outputs.node == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Detect package manager
         id: pm
@@ -105,7 +105,7 @@ jobs:
     if: needs.detect.outputs.go == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -135,7 +135,7 @@ jobs:
     if: needs.detect.outputs.python == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -173,7 +173,7 @@ jobs:
     if: needs.detect.outputs.rust == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
