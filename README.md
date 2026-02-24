@@ -83,6 +83,7 @@ SDD ensures every feature starts with a written specification:
 5. **Verify** -- Confirm all acceptance criteria pass
 
 Run `/new-spec` in Claude Code to start this workflow.
+See the [SDD Templates Guide](docs/specs/_templates/README.md) for how spec/plan/tasks relate and how to review them.
 
 ## Links
 
@@ -91,3 +92,4 @@ Run `/new-spec` in Claude Code to start this workflow.
 - [PRD](docs/prd.md)
 - [ADR Template](docs/decisions/000-template.md)
 - [Spec Template](docs/specs/_templates/spec.md)
+- [SDD Templates Guide](docs/specs/_templates/README.md)
