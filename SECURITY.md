@@ -18,7 +18,7 @@ please report it responsibly.
 
 1. **Do NOT open a public issue.** Security vulnerabilities must be
    reported privately.
-2. Send an email to: **[SECURITY_EMAIL]**
+2. Send an email to: **{{SECURITY_EMAIL}}**
 3. Include the following in your report:
    - Description of the vulnerability
    - Steps to reproduce
@@ -62,5 +62,5 @@ above, we commit to:
 
 ## Contact
 
-- Security reports: **[SECURITY_EMAIL]**
+- Security reports: **{{SECURITY_EMAIL}}**
 - General questions: Open a GitHub Discussion

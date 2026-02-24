@@ -4,6 +4,10 @@
 
 Draft | In Review | Approved | Implemented
 
+## Bounded Context
+
+{{BOUNDED_CONTEXT}} (as defined in `docs/prd.md`)
+
 ## Overview
 
 {{BRIEF_DESCRIPTION}}
@@ -52,6 +56,32 @@ As a {{ROLE}}, I want to {{ACTION}}, so that {{BENEFIT}}.
 ### Never Do
 
 - ...
+
+## Technical Constraints
+
+- ...
+
+<!--
+Constraints on how the feature must be implemented.
+Examples: "Use SSE instead of WebSocket", "All external calls via ACL",
+"Optimistic locking required for this aggregate"
+-->
+
+## Domain Impact
+
+### Affected Aggregates
+
+- {{AGGREGATE}}: {{WHAT_CHANGES}}
+
+### Domain Events
+
+- Published: {{EVENT}} (triggered by {{CONDITION}})
+- Consumed: {{EVENT}} (from {{SOURCE_CONTEXT}})
+
+### Ubiquitous Language Additions
+
+| Term | Definition | Context |
+|------|------------|---------|
 
 ## Open Questions
 

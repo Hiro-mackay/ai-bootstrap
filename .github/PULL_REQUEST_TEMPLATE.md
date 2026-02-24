@@ -1,3 +1,7 @@
+## Spec Reference
+
+<!-- Link the spec this PR implements. e.g., docs/specs/my-feature/spec.md -->
+
 ## Summary
 
 <!-- Briefly describe what this PR does and why. -->
@@ -27,4 +31,5 @@
 - [ ] Linting passes
 - [ ] Documentation updated (if applicable)
 - [ ] No secrets or credentials in code
+- [ ] ADR created (if architectural change)
 - [ ] Breaking changes documented (if applicable)

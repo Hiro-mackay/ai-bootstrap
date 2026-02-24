@@ -8,32 +8,28 @@ user-invocable: false
 
 Every feature begins with a written spec. No code without a reviewed spec and approved plan.
 
-## When to Use SDD
-
-**Full workflow** -- New features, significant refactors, multi-file changes.
-**Lightweight** (skip to step 3) -- Bug fixes with clear reproduction, isolated config changes.
-**Skip entirely** -- Typo fixes, single-line changes, trivial tasks where the diff is obvious.
-
 ## Workflow
 
 Enter Plan Mode at step 1, exit at step 6.
 
 1. **Research** -- Use Explore subagents to investigate the codebase before writing anything. Understand existing patterns, affected files, and dependencies.
-2. **Constitution** -- Read `docs/constitution.md`. Confirm alignment with project principles.
-3. **Spec** -- Copy `docs/specs/_templates/spec.md` to `docs/specs/{{FEATURE_SLUG}}/spec.md`. Fill in problem, user stories, acceptance criteria (Given/When/Then). Mark unknowns as `[NEEDS CLARIFICATION]`. Use AskUserQuestion to surface ambiguities -- interview the user on edge cases, tradeoffs, and scope before finalizing. Spec should be concise and domain-oriented; avoid bloat.
-4. **Plan** -- Copy `docs/specs/_templates/plan.md`. Define architecture decisions, component breakdown, risks. If the decision is significant, create an ADR in `docs/decisions/`.
+2. **Constitution & PRD** -- Read `docs/constitution.md` and `docs/prd.md` (if it exists). Confirm alignment with project principles and domain boundaries.
+3. **Spec** -- Copy `docs/specs/_templates/spec.md` to `docs/specs/{{FEATURE_SLUG}}/spec.md`. Fill in problem, user stories, acceptance criteria (Given/When/Then). Mark unknowns as `[NEEDS CLARIFICATION]`. Use AskUserQuestion to surface ambiguities -- interview the user on edge cases, tradeoffs, and scope before finalizing. Spec should be concise and domain-oriented; avoid bloat. Scope the spec to a single bounded context as defined in `docs/prd.md`.
+4. **Plan** -- Copy `docs/specs/_templates/plan.md`. Define architecture decisions, component breakdown, risks. Include aggregate design and domain event flows where applicable (use `ddd-principles` skill for guidance). Create an ADR in `docs/decisions/` when any of these apply: new external dependency, breaking schema change, auth/authz model change, new bounded context, context map relationship change, new infrastructure component.
 5. **Tasks** -- Copy `docs/specs/_templates/tasks.md`. Break into dependency-ordered tasks. Each task: one concern, owned files listed, clear acceptance criteria.
 6. **Execution mode** -- Default: team. Single only when 1 file AND 1 concern. Follow `team-conventions` skill for team setup. Convert tasks.md into TaskCreate items.
-7. **Implementation** -- One task = one atomic commit. Follow `docs/constitution.md` Article III.
-8. **Verification** -- Run `/verify`. All acceptance criteria pass. Update spec status to Implemented.
+7. **Implementation** -- One task = one atomic commit. Follow `docs/constitution.md` Article III. Use `test-strategy` skill for TDD guidance.
+8. **Verification** -- Run `/verify`. Additionally:
+   a. Confirm each acceptance criterion has a corresponding passing test
+   b. Confirm all `[NEEDS CLARIFICATION]` markers are resolved
+   c. Run `git diff` to verify no out-of-scope changes
+   d. Update spec status to Implemented
 
 ## Flow Variants
 
 **Bug fix** -- Start from step 1 (Research to reproduce). Minimal spec (problem + reproduction steps). Skip plan if isolated to one module. Write failing test first, then fix.
 
 **Refactoring** -- Spec defines current state, desired state, motivation. Each task must leave codebase in working state. Verify no behavior changes.
-
-Both default to team unless trivially small (1 file, 1 concern).
 
 ## Boundaries
 
@@ -42,8 +38,10 @@ Both default to team unless trivially small (1 file, 1 concern).
 - Research before spec, interview before finalizing
 - Acceptance criteria in Given/When/Then
 - Explicit execution mode decision after task breakdown
-- ADR for significant architecture decisions
-- Update spec status as it progresses (Draft -> Approved -> Implemented)
+- ADR for significant architecture decisions (new dependencies, schema breaks, auth changes, new contexts)
+- Update spec status as it progresses (Draft -> In Review -> Approved -> Implemented)
+- Reference `docs/prd.md` for domain boundaries; scope specs to a single bounded context
+- `/verify` before marking any spec as Implemented
 
 ### Ask First
 

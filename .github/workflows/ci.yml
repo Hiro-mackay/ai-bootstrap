@@ -78,12 +78,26 @@ jobs:
       - name: Lint
         run: |
           PM="${{ steps.pm.outputs.manager }}"
-          $PM run lint --if-present 2>/dev/null || true
+          $PM run lint --if-present
+
+      - name: Build
+        run: |
+          PM="${{ steps.pm.outputs.manager }}"
+          $PM run build --if-present
 
       - name: Test
         run: |
           PM="${{ steps.pm.outputs.manager }}"
-          $PM run test --if-present 2>/dev/null || true
+          $PM run test --if-present
+
+      - name: Audit
+        run: |
+          PM="${{ steps.pm.outputs.manager }}"
+          case "$PM" in
+            bun)  bun pm audit 2>/dev/null || true ;;
+            pnpm) pnpm audit --audit-level=high 2>/dev/null || true ;;
+            *)    npm audit --audit-level=high 2>/dev/null || true ;;
+          esac
 
   go:
     name: Go
@@ -104,8 +118,16 @@ jobs:
         with:
           version: latest
 
+      - name: Build
+        run: go build ./...
+
       - name: Test
         run: go test ./...
+
+      - name: Vulnerability Check
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./... 2>/dev/null || true
 
   python:
     name: Python
@@ -140,6 +162,11 @@ jobs:
             python -m unittest discover tests
           fi
 
+      - name: Audit
+        run: |
+          pip install pip-audit 2>/dev/null
+          pip-audit 2>/dev/null || true
+
   rust:
     name: Rust
     needs: detect
@@ -161,5 +188,13 @@ jobs:
           cargo fmt --check
           cargo clippy -- -D warnings
 
+      - name: Build
+        run: cargo build
+
       - name: Test
         run: cargo test
+
+      - name: Audit
+        run: |
+          cargo install cargo-audit 2>/dev/null || true
+          cargo audit 2>/dev/null || true

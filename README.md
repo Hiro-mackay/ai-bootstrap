@@ -7,19 +7,20 @@ Provides project structure, Spec-Driven Development (SDD) workflow, and Claude C
 
 - **CLAUDE.md** -- AI assistant configuration scoped to your project
 - **Constitution** -- Non-negotiable project rules (specs before code, no secrets, etc.)
+- **PRD template** -- Domain boundaries, ubiquitous language, and bounded contexts
 - **Architecture doc** -- Single source of truth for system design
 - **SDD workflow** -- Templates for specs, plans, and task breakdowns
+- **SDD skill** -- Auto-loaded Claude skill encoding the full SDD workflow
 - **ADR template** -- Architecture Decision Records for tracking decisions
-- **Claude commands** -- `/new-spec` to scaffold new feature specs
+- **Claude commands** -- `/new-spec` for feature specs, `/adr` for architecture decisions, `/setup` for project initialization
 
 ## Quick Start
 
 1. Click **"Use this template"** on GitHub to create your repo
 2. Clone your new repo
-3. Edit `CLAUDE.md`: replace `{{PROJECT_NAME}}`, `{{TECH_STACK}}`, and `{{PROJECT_DESCRIPTION}}`
-4. Edit `docs/architecture.md`: fill in your system design
-5. Review `docs/constitution.md`: customize rules for your team
-6. Start building: run `/new-spec` in Claude Code to create your first feature spec
+3. Run `/setup` in Claude Code to configure project name, stack, architecture, and PRD
+4. Review `docs/constitution.md`: customize rules for your team
+5. Start building: run `/new-spec` in Claude Code to create your first feature spec
 
 ## Project Structure
 
@@ -30,6 +31,7 @@ Provides project structure, Spec-Driven Development (SDD) workflow, and Claude C
 ├── docs/
 │   ├── constitution.md              # Project rules and principles
 │   ├── architecture.md              # System design (source of truth)
+│   ├── prd.md                       # PRD (domain boundaries)
 │   ├── decisions/
 │   │   └── 000-template.md          # ADR template
 │   └── specs/
@@ -42,7 +44,9 @@ Provides project structure, Spec-Driven Development (SDD) workflow, and Claude C
 │   │   └── sdd/
 │   │       └── SKILL.md             # SDD workflow knowledge
 │   └── commands/
-│       └── new-spec.md              # /new-spec command
+│       ├── new-spec.md              # /new-spec command
+│       ├── adr.md                   # /adr command
+│       └── setup.md                 # /setup command
 └── .github/                         # GitHub config (PR templates, CI)
 ```
 
@@ -55,7 +59,7 @@ Add project-specific rules in the "Project Rules" section.
 
 ### 2. Constitution
 
-Review `docs/constitution.md`. The five articles are starting points.
+Review `docs/constitution.md`. The articles are starting points.
 Add, modify, or remove articles to match your team's standards.
 
 ### 3. Architecture
@@ -84,5 +88,6 @@ Run `/new-spec` in Claude Code to start this workflow.
 
 - [Constitution](docs/constitution.md)
 - [Architecture](docs/architecture.md)
+- [PRD](docs/prd.md)
 - [ADR Template](docs/decisions/000-template.md)
 - [Spec Template](docs/specs/_templates/spec.md)

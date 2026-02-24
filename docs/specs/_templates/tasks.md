@@ -2,45 +2,47 @@
 
 ## References
 
-- [Spec](../{{FEATURE_SLUG}}/spec.md)
-- [Plan](../{{FEATURE_SLUG}}/plan.md)
+- [Spec](./spec.md)
+- [Plan](./plan.md)
 
 ## Task Breakdown
 
 ### Phase 1: Setup
 
 - [ ] Task 1.1: ...
+  - Files: ...
 - [ ] Task 1.2: ...
+  - Files: ...
 
-### Phase 2: Core Implementation
+### Phase 2: Core Implementation (TDD -- write test first, then implement)
 
 - [ ] Task 2.1: ...
+  - Test: ...
+  - Files: ...
   - Depends on: 1.1
 - [ ] Task 2.2: ...
+  - Test: ...
+  - Files: ...
   - Depends on: 1.2
 
-### Phase 3: Integration
+### Phase 3: Wiring
 
 - [ ] Task 3.1: ...
+  - Files: ...
   - Depends on: 2.1, 2.2
 
-### Phase 4: Testing
+### Phase 4: Integration & E2E Tests
 
-- [ ] Task 4.1: Write unit tests
-  - Depends on: 2.1, 2.2
-- [ ] Task 4.2: Write integration tests
+- [ ] Task 4.1: Write integration tests
+  - Files: ...
+  - Depends on: 3.1
+- [ ] Task 4.2: Write E2E tests (if applicable)
+  - Files: ...
   - Depends on: 3.1
 
 ### Phase 5: Documentation
 
 - [ ] Task 5.1: Update architecture.md if needed
+  - Files: ...
 - [ ] Task 5.2: Update README if needed
-
-## Estimation Guidance
-
-| Size  | Description                  | Typical Duration |
-|-------|------------------------------|-----------------|
-| S     | Single file, isolated change | < 1 hour        |
-| M     | 2-3 files, minor integration | 1-4 hours       |
-| L     | Multiple files, new patterns | 4-8 hours       |
-| XL    | Cross-cutting, new systems   | 1-3 days        |
+  - Files: ...
