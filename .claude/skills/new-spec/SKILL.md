@@ -1,5 +1,16 @@
 ---
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash
+name: new-spec
+description: Create a new feature spec using the SDD workflow
+user-invocable: true
+disable-model-invocation: true
+argument-hint: "[feature name]"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 ---
 
 # New Spec
@@ -8,7 +19,7 @@ Create a new feature spec using the SDD workflow.
 
 ## Steps
 
-1. Ask the user for a feature name and brief description.
+1. **Feature name**: Use `$ARGUMENTS` as the feature name if provided. Otherwise, ask the user for a feature name and brief description.
 
 2. Research the codebase with Explore subagents: find existing patterns, affected files, related code. Summarize findings before proceeding.
 
@@ -37,7 +48,7 @@ Create a new feature spec using the SDD workflow.
    - Boundaries (Always / Ask First / Never)
    - Mark anything unresolved as [NEEDS CLARIFICATION]
 
-10. **ADR Trigger** -- Check if any ADR criteria from SDD workflow step 4 apply. If so, suggest running `/adr`.
+10. **ADR Trigger** -- Check if any ADR criteria from the SDD rule apply. If so, suggest running `/adr`.
 
 11. **Scope Audit** -- Read the chosen bounded context from `docs/prd.md`. Verify that all entities, value objects, and domain events referenced in the spec are listed under that context. Flag any references to concepts belonging to other contexts and suggest splitting the spec or updating the PRD.
 

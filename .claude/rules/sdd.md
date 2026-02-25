@@ -1,9 +1,3 @@
----
-name: sdd
-description: Spec-Driven Development workflow for designing features before implementation
-user-invocable: false
----
-
 # Spec-Driven Development (SDD)
 
 Every feature begins with a written spec. No code without a reviewed spec and approved plan.

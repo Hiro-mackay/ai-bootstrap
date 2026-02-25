@@ -1,4 +1,8 @@
 ---
+name: setup
+description: Project initialization wizard -- configures CLAUDE.md, architecture, PRD, and first ADR
+user-invocable: true
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
