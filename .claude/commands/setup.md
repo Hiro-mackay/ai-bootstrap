@@ -68,7 +68,7 @@ Record the tech stack choice as the first Architecture Decision Record.
 
 ## Step 8: PRD Creation
 
-Read `docs/prd.md` as the base. Use `ddd-principles` skill knowledge to guide the interview:
+Read `docs/prd.md` as the base. The `ddd-principles` rule is auto-loaded. Use it to guide the interview:
 
 1. "Describe the domain this project operates in" -> Domain Overview
 2. "Which parts are core to your business vs supporting/generic?" -> Subdomains table
