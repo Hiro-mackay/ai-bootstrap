@@ -1,0 +1,14 @@
+pre-commit:
+  commands:
+    typecheck:
+      root: frontend
+      run: bun tsc --noEmit
+    format:
+      root: frontend
+      run: bun biome check --write .
+
+pre-push:
+  commands:
+    build:
+      root: frontend
+      run: bun vite build

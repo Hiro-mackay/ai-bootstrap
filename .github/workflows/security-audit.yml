@@ -31,9 +31,9 @@ jobs:
       matrix:
         include:
           - name: node
-            file: package.json
+            file: frontend/package.json
           - name: go
-            file: go.mod
+            file: backend/go.mod
           - name: python
             file: requirements.txt
           - name: rust
@@ -50,10 +50,19 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Setup Bun
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'node'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: frontend/package.json
+
       - name: Node.js audit
         if: steps.check.outputs.exists == 'true' && matrix.name == 'node'
+        working-directory: frontend
         run: |
-          if [[ -f package-lock.json ]]; then
+          if [[ -f bun.lock ]]; then
+            bun pm audit 2>/dev/null || true
+          elif [[ -f package-lock.json ]]; then
             npm audit --audit-level=high || true
           elif [[ -f yarn.lock ]]; then
             npx yarn-audit-fix --audit-level high || true
@@ -63,6 +72,7 @@ jobs:
 
       - name: Go vulnerability check
         if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
+        working-directory: backend
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./... || true
@@ -89,8 +99,8 @@ jobs:
         id: lang
         run: |
           LANGS=""
-          if [[ -f package.json ]]; then LANGS="javascript-typescript"; fi
-          if [[ -f go.mod ]]; then
+          if [[ -f frontend/package.json ]]; then LANGS="javascript-typescript"; fi
+          if [[ -f backend/go.mod ]]; then
             [[ -n "$LANGS" ]] && LANGS="$LANGS,"
             LANGS="${LANGS}go"
           fi

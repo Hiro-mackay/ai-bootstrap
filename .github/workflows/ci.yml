@@ -25,8 +25,8 @@ jobs:
       - name: Detect project language
         id: check
         run: |
-          echo "node=$([[ -f package.json ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "go=$([[ -f go.mod ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "node=$([[ -f frontend/package.json ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "go=$([[ -f backend/go.mod ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "python=$([[ -f requirements.txt || -f pyproject.toml || -f setup.py ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "rust=$([[ -f Cargo.toml ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
@@ -41,11 +41,11 @@ jobs:
       - name: Detect package manager
         id: pm
         run: |
-          if [[ -f bun.lockb ]]; then
+          if [[ -f frontend/bun.lock ]]; then
             echo "manager=bun" >> "$GITHUB_OUTPUT"
-          elif [[ -f pnpm-lock.yaml ]]; then
+          elif [[ -f frontend/pnpm-lock.yaml ]]; then
             echo "manager=pnpm" >> "$GITHUB_OUTPUT"
-          elif [[ -f yarn.lock ]]; then
+          elif [[ -f frontend/yarn.lock ]]; then
             echo "manager=yarn" >> "$GITHUB_OUTPUT"
           else
             echo "manager=npm" >> "$GITHUB_OUTPUT"
@@ -55,18 +55,22 @@ jobs:
         if: steps.pm.outputs.manager != 'bun'
         uses: actions/setup-node@v4
         with:
-          node-version-file: .node-version
+          node-version-file: frontend/.node-version
           cache: ${{ steps.pm.outputs.manager }}
+          cache-dependency-path: frontend/
 
       - name: Setup Bun
         if: steps.pm.outputs.manager == 'bun'
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: frontend/package.json
 
       - name: Setup pnpm
         if: steps.pm.outputs.manager == 'pnpm'
         uses: pnpm/action-setup@v4
 
       - name: Install dependencies
+        working-directory: frontend
         run: |
           case "${{ steps.pm.outputs.manager }}" in
             bun)  bun install --frozen-lockfile ;;
@@ -76,21 +80,25 @@ jobs:
           esac
 
       - name: Lint
+        working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
           $PM run lint --if-present
 
       - name: Build
+        working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
           $PM run build --if-present
 
       - name: Test
+        working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
           $PM run test --if-present
 
       - name: Audit
+        working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
           case "$PM" in
@@ -110,21 +118,25 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version-file: backend/go.mod
           cache: true
 
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          working-directory: backend
 
       - name: Build
+        working-directory: backend
         run: go build ./...
 
       - name: Test
+        working-directory: backend
         run: go test ./...
 
       - name: Vulnerability Check
+        working-directory: backend
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./... 2>/dev/null || true

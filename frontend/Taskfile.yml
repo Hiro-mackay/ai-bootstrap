@@ -1,0 +1,46 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Start development server
+    cmd: bun vite
+
+  build:
+    desc: Build for production
+    cmd: bun vite build
+
+  preview:
+    desc: Preview production build
+    cmd: bun vite preview
+
+  test:
+    desc: Run tests
+    cmd: bun vitest run
+
+  test:watch:
+    desc: Run tests in watch mode
+    cmd: bun vitest
+
+  lint:
+    desc: Lint and format check
+    cmd: bun biome check .
+
+  format:
+    desc: Lint and format with auto-fix
+    cmd: bun biome check --write .
+
+  type-check:
+    desc: Type check
+    cmd: bun tsc --noEmit
+
+  clean:
+    desc: Remove build artifacts
+    cmd: rm -rf dist/ node_modules/.vite/
+
+  ci:
+    desc: Run CI pipeline
+    cmds:
+      - task: lint
+      - task: type-check
+      - task: test
+      - task: build
