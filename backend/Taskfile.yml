@@ -1,0 +1,40 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Start development server with hot-reload
+    deps: [install-tools]
+    cmd: air
+
+  build:
+    desc: Build the server binary
+    cmd: go build -o bin/server ./cmd/server
+
+  test:
+    desc: Run tests
+    cmd: go test ./... -v -race -count=1
+
+  lint:
+    desc: Run linter
+    cmd: golangci-lint run
+
+  format:
+    desc: Format code
+    cmd: golangci-lint fmt
+
+  clean:
+    desc: Remove build artifacts
+    cmd: rm -rf bin/ tmp/
+
+  ci:
+    desc: Run CI pipeline
+    cmds:
+      - task: lint
+      - task: test
+      - task: build
+
+  install-tools:
+    desc: Install development tools
+    cmd: go install github.com/air-verse/air@latest
+    status:
+      - which air
