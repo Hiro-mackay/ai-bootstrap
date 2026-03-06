@@ -12,6 +12,8 @@ Provides project structure, Spec-Driven Development (SDD) workflow, and Claude C
 - **SDD workflow** -- Templates for specs, plans, and task breakdowns
 - **SDD skill** -- Auto-loaded Claude skill encoding the full SDD workflow
 - **ADR template** -- Architecture Decision Records for tracking decisions
+- **Monorepo skeleton** -- `backend/` (Go Connect RPC + DDD) + `frontend/` (React Bun + TanStack Router + connect-query) with Taskfile orchestration
+- **Proto-first API** -- Protocol Buffers schema in `proto/`, code generation via `buf generate`
 - **Claude commands** -- `/new-spec` for feature specs, `/adr` for architecture decisions, `/setup` for project initialization
 
 ## Quick Start
@@ -19,34 +21,53 @@ Provides project structure, Spec-Driven Development (SDD) workflow, and Claude C
 1. Click **"Use this template"** on GitHub to create your repo
 2. Clone your new repo
 3. Run `/setup` in Claude Code to configure project name, stack, architecture, and PRD
-4. Review `docs/constitution.md`: customize rules for your team
-5. Start building: run `/new-spec` in Claude Code to create your first feature spec
+4. Run `task proto:gen` to generate code from proto files
+5. Run `task dev` to start both Go and React development servers
+6. Review `docs/constitution.md`: customize rules for your team
+7. Start building: run `/new-spec` in Claude Code to create your first feature spec
 
 ## Project Structure
 
 ```
 .
 ├── CLAUDE.md                        # AI assistant project config
-├── .gitignore                       # Tech-agnostic ignore patterns
+├── Taskfile.yml                     # Root orchestrator (task dev/test/lint/ci)
+├── .env.example                     # Environment variable template
+├── proto/                           # Protocol Buffers schema definitions
+│   └── {service}/v1/{service}.proto # Service definitions
+├── buf.yaml                         # Buf module config
+├── buf.gen.yaml                     # Code generation config
+├── backend/                         # Go backend
+│   ├── Taskfile.yml                 # Go tasks (go:dev, go:build, go:test, go:lint)
+│   ├── cmd/
+│   │   └── server/main.go          # Entry + wiring + mux + graceful shutdown
+│   ├── internal/                    # Internal packages (DDD layers)
+│   │   ├── gen/                     # (gitignored) protobuf generated code
+│   │   ├── domain/                  # Entities, value objects, repository interfaces
+│   │   ├── usecase/                 # Application logic (commands, queries)
+│   │   ├── infrastructure/          # Database, cache adapters
+│   │   └── interface/               # Connect RPC handlers, interceptors
+│   └── pkg/                         # Shared packages (logger, config)
+├── frontend/                        # React frontend
+│   ├── Taskfile.yml                 # React tasks (react:dev, react:build, react:test, react:lint)
+│   └── src/                         # React source
+│       ├── gen/                     # (gitignored) protobuf generated code
+│       ├── app/                     # Router, QueryClient, TransportProvider
+│       ├── components/              # Shared UI (layout, primitives)
+│       ├── features/                # Feature modules (pages, components, api, hooks)
+│       ├── lib/                     # Shared infrastructure (transport, validation)
+│       ├── stores/                  # Zustand stores
+│       └── test/                    # Test setup and utilities
 ├── docs/
 │   ├── constitution.md              # Project rules and principles
 │   ├── architecture.md              # System design (source of truth)
 │   ├── prd.md                       # PRD (domain boundaries)
-│   ├── decisions/
-│   │   └── 000-template.md          # ADR template
-│   └── specs/
-│       └── _templates/
-│           ├── spec.md              # Feature spec template
-│           ├── plan.md              # Implementation plan template
-│           └── tasks.md             # Task breakdown template
+│   ├── stacks/                      # Stack reference architecture
+│   ├── decisions/                   # Architecture Decision Records
+│   └── specs/                       # Feature specs (SDD workflow)
 ├── .claude/
-│   ├── skills/
-│   │   └── sdd/
-│   │       └── SKILL.md             # SDD workflow knowledge
-│   └── commands/
-│       ├── new-spec.md              # /new-spec command
-│       ├── adr.md                   # /adr command
-│       └── setup.md                 # /setup command
+│   ├── skills/sdd/                  # SDD workflow knowledge
+│   └── commands/                    # /new-spec, /adr, /setup commands
 └── .github/                         # GitHub config (PR templates, CI)
 ```
 

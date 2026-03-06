@@ -64,7 +64,7 @@ Tasks must fully decompose the plan into executable units.
 - **TDD compliance** -- Does Phase 2 (Core Implementation) list tests before implementation files?
 - **Atomicity** -- Can each task result in one atomic commit that leaves the codebase working?
 - **File ownership** -- Are owned files listed per task with no overlaps (prevents merge conflicts in teams)?
-- **Phase ordering** -- Setup -> Core -> Wiring -> Integration -> Docs -- does the progression make sense?
+- **Phase ordering** -- Setup -> Domain -> Application -> Infrastructure -> Presentation -> Integration -> Docs -- does the progression make sense?
 
 ## Review Checklist (Quick Reference)
 
