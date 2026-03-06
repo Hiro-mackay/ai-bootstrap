@@ -17,12 +17,17 @@ Desktop.ini
 
 # Build outputs
 dist/
+bin/
 build/
 out/
 target/
 *.o
 *.pyc
 __pycache__/
+
+# Generated code (protobuf)
+backend/internal/gen/
+frontend/src/gen/
 
 # Dependencies
 node_modules/

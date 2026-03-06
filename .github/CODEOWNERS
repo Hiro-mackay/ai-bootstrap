@@ -24,12 +24,12 @@
 # /.github/ @your-org/platform-team
 #
 # Frontend
-# /src/components/ @your-org/frontend-team
-# /src/pages/ @your-org/frontend-team
+# /frontend/src/components/ @your-org/frontend-team
+# /frontend/src/pages/ @your-org/frontend-team
 #
 # Backend / API
-# /src/api/ @your-org/backend-team
-# /src/server/ @your-org/backend-team
+# /backend/internal/ @your-org/backend-team
+# /backend/cmd/ @your-org/backend-team
 #
 # Infrastructure
 # /infra/ @your-org/infra-team
