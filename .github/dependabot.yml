@@ -1,3 +1,7 @@
+# Dependabot configuration
+# During /setup (Step 4c), uncomment the ecosystem sections matching your stack.
+# GitHub Actions ecosystem is always active.
+
 version: 2
 
 updates:
@@ -17,7 +21,7 @@ updates:
   # Node.js / npm dependencies
   # Uncomment if your project uses package.json
   # - package-ecosystem: npm
-  #   directory: /
+  #   directory: /frontend
   #   schedule:
   #     interval: weekly
   #     day: monday
@@ -35,7 +39,7 @@ updates:
   # Go modules
   # Uncomment if your project uses go.mod
   # - package-ecosystem: gomod
-  #   directory: /
+  #   directory: /backend
   #   schedule:
   #     interval: weekly
   #     day: monday

@@ -11,6 +11,7 @@
 - [Constitution](docs/constitution.md) -- project rules and principles
 - [Architecture](docs/architecture.md) -- single source of truth for system design
 - [Product Requirements](docs/prd.md) -- domain boundaries and product scope
+- [Stack Reference](docs/stacks/) -- tech-stack-specific implementation patterns (populated during /setup)
 
 ## Commands
 
@@ -22,6 +23,10 @@
 - **Lint**: `{{LINT_COMMAND}}`
 - **Test**: `{{TEST_COMMAND}}`
 - **Build**: `{{BUILD_COMMAND}}`
+<!-- Uncomment during /setup if buf.yaml exists:
+- **Proto Generate**: `buf generate`
+- **Proto Lint**: `buf lint`
+-->
 
 ## Project Rules
 
