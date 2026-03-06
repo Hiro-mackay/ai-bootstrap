@@ -19,6 +19,19 @@ Example:
 - **Queue** -- Redis-backed job queue
 -->
 
+## Layer Architecture
+
+<!-- Stack-specific references (layer naming varies by stack):
+  Go DDD: docs/stacks/go-ddd.md (UseCase / Interface)
+  React/Next.js: docs/stacks/react-bun.md -->
+
+| Layer | Responsibility | Allowed Dependencies |
+|-------|---------------|---------------------|
+| Domain | Business logic, entities, value objects, repository interfaces | None (innermost) |
+| Application (Go: UseCase, React: features/*/api/) | Use case orchestration, commands, queries, transactions | Domain |
+| Infrastructure (React: lib/, stores/) | External systems, persistence, caching | Domain (implements interfaces) |
+| Presentation (Go: Interface, React: features/*/pages/ + components/) | HTTP handlers, UI components, DTOs | Application |
+
 ## Data Flow
 
 {{DATA_FLOW}}
@@ -34,6 +47,7 @@ Include key request/response flows and async processes.
 |---------------|-----------|-------|
 | Language      | {{LANG}}  |       |
 | Framework     | {{FW}}    |       |
+| API Protocol  | {{API_PROTOCOL}} |       |
 | Database      | {{DB}}    |       |
 | Infrastructure| {{INFRA}} |       |
 | CI/CD         | {{CICD}}  |       |

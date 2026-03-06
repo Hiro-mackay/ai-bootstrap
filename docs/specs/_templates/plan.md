@@ -29,6 +29,43 @@ Describe the high-level approach to implementing this feature.
 - **Location**: ...
 - **Changes**: ...
 
+## Architecture Compliance
+
+### Layer Assignment
+
+| Component | Layer | Directory | Justification |
+|-----------|-------|-----------|---------------|
+| ... | Domain / Application / Infrastructure / Presentation | ... | ... |
+
+> Reference: project's stack doc (docs/stacks/go-ddd.md or docs/stacks/react-bun.md)
+
+### Compliance Checklist
+
+#### Go DDD (delete if React-only)
+
+- [ ] Domain entities use exported fields with behavior methods (no getter ceremony)
+- [ ] No JSON/DB tags on domain types (tags on interface DTOs only)
+- [ ] Domain layer has no imports from infrastructure or interface
+- [ ] Value Objects for typed values (no raw primitives for domain concepts)
+- [ ] UseCase layer uses Command/Query with Execute + Input/Output structs
+- [ ] TransactionManager interface in domain, WithTransaction in UseCase layer
+- [ ] Structured error handling via AppError (not sentinel errors only)
+- [ ] DTOs for all API request/response bodies (request/ and response/ subdirectories)
+- [ ] Repository interface in domain, implementation in infrastructure with BaseRepository
+
+#### React (delete if Go-only)
+
+- [ ] Frontend components scoped to feature directories (no feature-specific code in components/ui/)
+- [ ] No barrel exports (index.ts) -- all imports use direct file paths
+- [ ] Data fetching uses TanStack Query with connect-query (auto-managed keys from proto definitions)
+- [ ] API types generated from schema (protobuf via `buf generate`, no manual API type definitions)
+- [ ] Client state in Zustand, server state in TanStack Query (never mixed)
+- [ ] Form validation uses Zod schemas composed from lib/validation/schemas.ts primitives
+- [ ] Mutations invalidate related queries in onSuccess
+- [ ] No cross-feature internal imports
+
+> Intentional violations require ADR.
+
 ## API Changes
 
 Describe any API additions or modifications.
