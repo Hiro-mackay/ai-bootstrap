@@ -1,14 +1,41 @@
 pre-commit:
   commands:
+    no-commit-to-main:
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$branch" = "main" ]; then
+          echo "Direct commits to main are not allowed. Use a feature branch."
+          exit 1
+        fi
+    detect-secrets:
+      run: |
+        if git diff --cached --diff-filter=ACM -z --name-only | \
+           xargs -0 grep -lE '(PRIVATE KEY|aws_secret|password=|api_key=)' 2>/dev/null; then
+          echo "Potential secret detected in staged files. Remove before committing."
+          exit 1
+        fi
+      glob: "*.{go,ts,tsx,js,jsx,json,yaml,yml,toml,env}"
+    check-large-files:
+      run: |
+        large=$(git diff --cached --diff-filter=ACM --name-only -z | \
+          xargs -0 -I{} find {} -size +1M 2>/dev/null)
+        if [ -n "$large" ]; then
+          echo "Files over 1MB detected:"
+          echo "$large"
+          exit 1
+        fi
+    lint:
+      root: frontend
+      run: bun run lint
     typecheck:
       root: frontend
-      run: bun tsc --noEmit
+      run: bun run type-check
     format:
       root: frontend
-      run: bun biome check --write .
+      run: bun run format
 
 pre-push:
   commands:
     build:
       root: frontend
-      run: bun vite build
+      run: bun run build
