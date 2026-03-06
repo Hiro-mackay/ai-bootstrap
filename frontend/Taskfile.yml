@@ -2,40 +2,48 @@ version: '3'
 
 tasks:
   dev:
-    desc: Start development server
-    cmd: bun vite
+    desc: Start development server (generates routes, then serves)
+    cmd: bun run dev
+
+  dev:watch-routes:
+    desc: Watch for route file changes (run alongside dev when adding routes)
+    cmd: bun run routes:watch
 
   build:
-    desc: Build for production
-    cmd: bun vite build
+    desc: Build for production (generates routes first)
+    cmd: bun run build
+
+  routes:generate:
+    desc: Generate route tree from file-based routes
+    cmd: bun run routes:generate
 
   preview:
     desc: Preview production build
-    cmd: bun vite preview
+    cmd: bun run preview
 
   test:
     desc: Run tests
-    cmd: bun vitest run
+    cmd: bun run test
 
   test:watch:
     desc: Run tests in watch mode
-    cmd: bun vitest
+    cmd: bun run test:watch
 
   lint:
     desc: Lint and format check
-    cmd: bun biome check .
+    cmd: bun run lint
 
   format:
     desc: Lint and format with auto-fix
-    cmd: bun biome check --write .
+    cmd: bun run format
 
   type-check:
     desc: Type check
-    cmd: bun tsc --noEmit
+    cmd: bun run type-check
 
   clean:
     desc: Remove build artifacts
-    cmd: rm -rf dist/ node_modules/.vite/
+    cmd: rm -rf dist/
 
   ci:
     desc: Run CI pipeline
