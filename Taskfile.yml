@@ -1,0 +1,69 @@
+version: '3'
+
+dotenv: ['.env']
+
+includes:
+  go:
+    taskfile: backend/Taskfile.yml
+    dir: backend
+  react:
+    taskfile: frontend/Taskfile.yml
+    dir: frontend
+
+tasks:
+  default:
+    cmd: task --list
+
+  proto:gen:
+    desc: Generate code from proto files
+    cmd: buf generate
+
+  proto:lint:
+    desc: Lint proto files
+    cmd: buf lint
+
+  dev:
+    desc: Start all development servers
+    deps: [go:dev, react:dev]
+
+  test:
+    desc: Run all tests
+    cmds:
+      - task: go:test
+      - task: react:test
+
+  format:
+    desc: Format all code
+    cmds:
+      - task: go:format
+      - task: react:format
+
+  format:check:
+    desc: Check formatting without fixing (CI-safe)
+    cmds:
+      - task: react:lint
+
+  lint:
+    desc: Run all linters
+    cmds:
+      - task: go:lint
+      - task: react:lint
+
+  check:
+    desc: Run all checks (proto lint, format, lint, type-check, build)
+    cmds:
+      - task: proto:lint
+      - task: go:lint
+      - task: react:lint
+      - task: react:type-check
+      - task: go:build
+
+  ci:
+    desc: Run full CI pipeline
+    cmds:
+      - task: go:ci
+      - task: react:ci
+
+  clean:
+    desc: Remove all build artifacts
+    deps: [go:clean, react:clean]
