@@ -392,15 +392,19 @@ Every route that displays server data MUST define a `loader` using `createQueryO
 ```typescript
 // features/todo/api/queries.ts -- query options factory + hooks
 import type { Transport } from '@connectrpc/connect';
-import { createQueryOptions, useSuspenseQuery } from '@connectrpc/connect-query';
+import { createQueryOptions, useTransport } from '@connectrpc/connect-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { TodoService } from '@/gen/todo/v1/todo_pb';
 
 // Factory for route loaders and non-hook contexts
 export const listTodosQueryOptions = (transport: Transport) =>
   createQueryOptions(TodoService.method.listTodos, {}, { transport });
 
-// Hook for components (paired with route loader)
-export const useTodoList = () => useSuspenseQuery(TodoService.method.listTodos);
+// Hook for components -- uses the same factory as the route loader
+export const useTodoList = () => {
+  const transport = useTransport();
+  return useSuspenseQuery(listTodosQueryOptions(transport));
+};
 ```
 
 ```typescript
@@ -449,12 +453,12 @@ export const Route = createFileRoute('/posts/$postId')({
 
 Rules:
 - Export query options factories from `features/{feature}/api/queries.ts` -- route files import from the feature API layer, not from `@/gen`
-- `createQueryOptions` generates the same query key as `useSuspenseQuery` -- cache is shared automatically
+- Hooks MUST use the same `createQueryOptions` factory as the loader -- this guarantees query key consistency and cache sharing
 - `prefetchQuery` starts the fetch without blocking navigation -- `<Suspense>` handles loading if data isn't ready
 - `defaultPreload: 'intent'` in router config triggers the loader on link hover, making navigation near-instant
 - Always use named functions for route `component` (not anonymous arrow functions -- causes remounts)
-- NEVER use `callUnaryMethod` or manual `queryKey` in loaders -- `createQueryOptions` ensures key consistency with hooks
-- NEVER use `ensureQueryData` in loaders -- it blocks navigation until data loads
+- NEVER use `callUnaryMethod` or manual `queryKey` arrays -- use `createQueryOptions` for key management
+- Use `prefetchQuery` in loaders -- it starts the fetch without blocking navigation
 
 ### Protected Routes (auth guard)
 

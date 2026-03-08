@@ -23,7 +23,7 @@ Enter Plan Mode at step 1, exit at step 6.
    g. Interface layer uses DTOs (domain types never in API surface)
    h. Frontend components live in feature directories (not in components/ui/ or any shared directory)
    i. No barrel exports (index.ts) -- all imports use direct file paths
-   j. Query keys use connect-query auto-managed keys (no manual key factories)
+   j. No manual `queryKey` arrays -- use `createQueryOptions` or connect-query hooks for key management
    k. Data fetching uses TanStack Query (server state never in Zustand)
    l. API types generated from schema (protobuf via `buf generate`, no manual API type definitions)
    m. Mutations have onSuccess handlers that invalidate related queries
