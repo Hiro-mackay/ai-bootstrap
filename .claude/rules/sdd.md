@@ -28,6 +28,8 @@ Enter Plan Mode at step 1, exit at step 6.
    l. API types generated from schema (protobuf via `buf generate`, no manual API type definitions)
    m. Mutations have onSuccess handlers that invalidate related queries
    n. No cross-feature internal imports (features import only from other features' public API files)
+   o. Routes with server data define a `loader` using `createQueryOptions` + `ensureQueryData` (no loading flicker)
+   p. Page components use `useSuspenseQuery` (not `useQuery`) for primary data, wrapped in `<Suspense>` at route level
    If violations found, create fix tasks before proceeding to verification.
 9. **Verification** -- Run `/verify`. Additionally:
    a. Confirm each acceptance criterion has a corresponding passing test

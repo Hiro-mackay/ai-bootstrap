@@ -102,32 +102,32 @@ export const transport = createConnectTransport({
 
 connect-query generates query keys from proto service definitions. No manual key factories needed.
 
+Page components that display server data MUST use `useSuspenseQuery` (not `useQuery`). This pairs with the route `loader` pattern to eliminate loading flicker.
+
 ```typescript
 // features/files/api/queries.ts
-import { useQuery } from '@connectrpc/connect-query';
+import { useSuspenseQuery } from '@connectrpc/connect-query';
 import { FileService } from '@/gen/file/v1/file_pb';
 
+// useSuspenseQuery for page-level data (paired with route loader)
 export const useFolderContents = (folderId: string) =>
-  useQuery(FileService.method.listFiles, { folderId });
+  useSuspenseQuery(FileService.method.listFiles, { folderId });
 ```
 
 ```typescript
 // features/auth/api/queries.ts
-import { useQuery, callUnaryMethod } from '@connectrpc/connect-query';
+import { useQuery } from '@connectrpc/connect-query';
 import { AuthService } from '@/gen/auth/v1/auth_pb';
 
+// useQuery (non-suspense) for optional/secondary data
 export const useMeQuery = () =>
   useQuery(AuthService.method.getMe);
-
-// For non-hook contexts (router guards):
-export async function fetchCurrentUser(transport: Transport) {
-  try {
-    return await callUnaryMethod(AuthService.method.getMe, {}, { transport });
-  } catch {
-    return null;
-  }
-}
 ```
+
+Rules:
+- `useSuspenseQuery` for primary page data (loader ensures cache is warm before render)
+- `useQuery` for optional, secondary, or conditionally-fetched data
+- Never use `callUnaryMethod` in queries -- use `createQueryOptions` + `ensureQueryData` for non-hook contexts (see Route Data Loading below)
 
 ### Feature Mutations
 
@@ -382,24 +382,62 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 ```
 
-### Route with Data Loading
+### Route Data Loading (CRITICAL)
+
+Every route that displays server data MUST define a `loader` using `createQueryOptions` + `ensureQueryData`. This prefetches data into TanStack Query cache before the component renders, eliminating loading flicker.
 
 ```typescript
-// routes/posts/$postId.tsx
+// routes/todos/index.tsx -- list route (no params)
+import { createQueryOptions } from '@connectrpc/connect-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { callUnaryMethod } from '@connectrpc/connect-query';
+import { Suspense } from 'react';
+import { TodoListPage } from '@/features/todo/pages/todo-list-page';
+import { TodoService } from '@/gen/todo/v1/todo_pb';
+
+export const Route = createFileRoute('/todos/')({
+  loader: ({ context: { queryClient, transport } }) =>
+    queryClient.ensureQueryData(
+      createQueryOptions(TodoService.method.listTodos, {}, { transport }),
+    ),
+  component: TodosRoute,
+});
+
+function TodosRoute() {
+  return (
+    <Suspense fallback={<p className="text-sm text-muted-foreground">Loading...</p>}>
+      <TodoListPage />
+    </Suspense>
+  );
+}
+```
+
+```typescript
+// routes/posts/$postId.tsx -- detail route (with params)
+import { createQueryOptions } from '@connectrpc/connect-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Suspense } from 'react';
+import { PostDetailPage } from '@/features/post/pages/post-detail-page';
 import { PostService } from '@/gen/post/v1/post_pb';
 
 export const Route = createFileRoute('/posts/$postId')({
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData({
-      queryKey: ['posts', params.postId],
-      queryFn: () =>
-        callUnaryMethod(PostService.method.getPost, { id: params.postId }, { transport: context.transport }),
-    }),
-  component: PostPage,
+  loader: ({ context: { queryClient, transport }, params }) =>
+    queryClient.ensureQueryData(
+      createQueryOptions(PostService.method.getPost, { id: params.postId }, { transport }),
+    ),
+  component: () => (
+    <Suspense fallback={<p className="text-sm text-muted-foreground">Loading...</p>}>
+      <PostDetailPage />
+    </Suspense>
+  ),
 });
 ```
+
+Rules:
+- `createQueryOptions` generates the same query key as `useSuspenseQuery` -- cache is shared automatically
+- `ensureQueryData` returns cached data if fresh, fetches if stale or missing
+- `<Suspense>` wraps the page component as a safety net (cache miss on client navigation)
+- `defaultPreload: 'intent'` in router config triggers the loader on link hover, making navigation near-instant
+- NEVER use `callUnaryMethod` or manual `queryKey` in loaders -- `createQueryOptions` ensures key consistency with hooks
 
 ### Protected Routes (auth guard)
 
@@ -429,7 +467,7 @@ Generated `routeTree.gen.ts` is auto-maintained -- do not edit manually.
 
 ### Page Components
 
-Page components are route entry points. They orchestrate feature components, handle loading/error states, and manage page-level dialog state.
+Page components are route entry points. They use `useSuspenseQuery` for primary data (loader guarantees cache is warm). No manual loading/error branching needed -- Suspense and Error Boundaries handle it at the route level.
 
 ```typescript
 // features/files/pages/file-browser-page.tsx
@@ -439,10 +477,8 @@ export function FileBrowserPage() {
   const { viewMode } = useUIStore();
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
 
-  const { data, isLoading, error, refetch } = useFolderContents(folderId);
-
-  if (isLoading) return <FileBrowserSkeleton />;
-  if (error) return <ErrorRetry message="Could not load folder" onRetry={refetch} />;
+  // useSuspenseQuery -- data is guaranteed by route loader, no loading/error checks needed
+  const { data } = useFolderContents(folderId);
 
   return (
     <div>
@@ -484,8 +520,9 @@ export function LoginPage() {
 
 Rules:
 - One page component per route
+- `useSuspenseQuery` for primary data -- no `isLoading`/`error` branching in the component
+- Suspense boundary in the route file wraps the page component (fallback for cache miss)
 - Dialog state is local `useState`, not global store
-- Loading/error handled inline (skeleton + retry pattern)
 - No business logic in page components
 
 ## Testing
@@ -566,6 +603,9 @@ Rules:
 | Server state in Zustand | No cache invalidation, stale data | connect-query for server state, Zustand for client state |
 | Feature-specific components in `components/ui/` | Pollutes shared primitives | Feature components in `features/{feature}/components/` |
 | Mutation without query invalidation | Stale data shown to user | Always invalidate related queries in onSuccess |
+| Route without `loader` for server data | Loading flicker, client-side waterfall | `loader` + `createQueryOptions` + `ensureQueryData` |
+| `useQuery` for primary page data | Manual loading/error branching, no Suspense | `useSuspenseQuery` paired with route `loader` |
+| `callUnaryMethod` or manual `queryKey` in loader | Key mismatch with hooks, cache miss | `createQueryOptions` for consistent keys |
 | Business logic in page components | Hard to test, violates SRP | Extract to hooks, validation, or component logic |
 | Manual form validation | Inconsistent, no schema reuse | Zod schemas + `useFormAction` |
 | Global store for dialog open/close | Over-engineering, unnecessary coupling | Local `useState` in page component |

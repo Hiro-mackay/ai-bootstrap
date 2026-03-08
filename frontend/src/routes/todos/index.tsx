@@ -1,6 +1,8 @@
+import { createQueryOptions } from '@connectrpc/connect-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Suspense } from 'react';
 import { TodoListPage } from '@/features/todo/pages/todo-list-page';
+import { TodoService } from '@/gen/todo/v1/todo_pb';
 
 function TodosRoute() {
   return (
@@ -11,5 +13,9 @@ function TodosRoute() {
 }
 
 export const Route = createFileRoute('/todos/')({
+  loader: ({ context: { queryClient, transport } }) =>
+    queryClient.ensureQueryData(
+      createQueryOptions(TodoService.method.listTodos, {}, { transport }),
+    ),
   component: TodosRoute,
 });
