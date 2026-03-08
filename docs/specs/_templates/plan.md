@@ -63,7 +63,7 @@ Describe the high-level approach to implementing this feature.
 - [ ] Form validation uses Zod schemas composed from lib/validation/schemas.ts primitives
 - [ ] Mutations invalidate related queries in onSuccess
 - [ ] No cross-feature internal imports
-- [ ] Routes with server data define `loader` using `createQueryOptions` + `ensureQueryData`
+- [ ] Routes with server data define `loader` using `createQueryOptions` + `prefetchQuery`
 - [ ] Page components use `useSuspenseQuery` for primary data, wrapped in `<Suspense>` at route level
 
 > Intentional violations require ADR.

@@ -125,9 +125,10 @@ export const useMeQuery = () =>
 ```
 
 Rules:
-- `useSuspenseQuery` for primary page data (loader ensures cache is warm before render)
+- `useSuspenseQuery` for primary page data (loader prefetches before render)
 - `useQuery` for optional, secondary, or conditionally-fetched data
-- Never use `callUnaryMethod` in queries -- use `createQueryOptions` + `ensureQueryData` for non-hook contexts (see Route Data Loading below)
+- Export `{method}QueryOptions` factory for route loaders and non-hook contexts (see Route Data Loading below)
+- Never use `callUnaryMethod` -- use `createQueryOptions` + `prefetchQuery` for non-hook contexts
 
 ### Feature Mutations
 
@@ -384,23 +385,30 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 ### Route Data Loading (CRITICAL)
 
-Every route that displays server data MUST define a `loader` using `createQueryOptions` + `ensureQueryData`. This prefetches data into TanStack Query cache before the component renders, eliminating loading flicker.
+Every route that displays server data MUST define a `loader` using `createQueryOptions` + `prefetchQuery`. This starts data fetching before the component renders, while `<Suspense>` handles the loading state.
+
+**Query options factory**: Export a `{method}QueryOptions` factory from `features/{feature}/api/queries.ts`. Reuse it in both the route loader and any non-hook context. This keeps the query definition in one place and avoids direct `@/gen` imports in route files.
+
+```typescript
+// features/todo/api/queries.ts -- query options factory + hooks
+import type { Transport } from '@connectrpc/connect';
+import { createQueryOptions, useSuspenseQuery } from '@connectrpc/connect-query';
+import { TodoService } from '@/gen/todo/v1/todo_pb';
+
+// Factory for route loaders and non-hook contexts
+export const listTodosQueryOptions = (transport: Transport) =>
+  createQueryOptions(TodoService.method.listTodos, {}, { transport });
+
+// Hook for components (paired with route loader)
+export const useTodoList = () => useSuspenseQuery(TodoService.method.listTodos);
+```
 
 ```typescript
 // routes/todos/index.tsx -- list route (no params)
-import { createQueryOptions } from '@connectrpc/connect-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Suspense } from 'react';
+import { listTodosQueryOptions } from '@/features/todo/api/queries';
 import { TodoListPage } from '@/features/todo/pages/todo-list-page';
-import { TodoService } from '@/gen/todo/v1/todo_pb';
-
-export const Route = createFileRoute('/todos/')({
-  loader: ({ context: { queryClient, transport } }) =>
-    queryClient.ensureQueryData(
-      createQueryOptions(TodoService.method.listTodos, {}, { transport }),
-    ),
-  component: TodosRoute,
-});
 
 function TodosRoute() {
   return (
@@ -409,35 +417,44 @@ function TodosRoute() {
     </Suspense>
   );
 }
+
+export const Route = createFileRoute('/todos/')({
+  loader: ({ context: { queryClient, transport } }) =>
+    queryClient.prefetchQuery(listTodosQueryOptions(transport)),
+  component: TodosRoute,
+});
 ```
 
 ```typescript
 // routes/posts/$postId.tsx -- detail route (with params)
-import { createQueryOptions } from '@connectrpc/connect-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Suspense } from 'react';
+import { getPostQueryOptions } from '@/features/post/api/queries';
 import { PostDetailPage } from '@/features/post/pages/post-detail-page';
-import { PostService } from '@/gen/post/v1/post_pb';
 
-export const Route = createFileRoute('/posts/$postId')({
-  loader: ({ context: { queryClient, transport }, params }) =>
-    queryClient.ensureQueryData(
-      createQueryOptions(PostService.method.getPost, { id: params.postId }, { transport }),
-    ),
-  component: () => (
+function PostDetailRoute() {
+  return (
     <Suspense fallback={<p className="text-sm text-muted-foreground">Loading...</p>}>
       <PostDetailPage />
     </Suspense>
-  ),
+  );
+}
+
+export const Route = createFileRoute('/posts/$postId')({
+  loader: ({ context: { queryClient, transport }, params }) =>
+    queryClient.prefetchQuery(getPostQueryOptions(params.postId, transport)),
+  component: PostDetailRoute,
 });
 ```
 
 Rules:
+- Export query options factories from `features/{feature}/api/queries.ts` -- route files import from the feature API layer, not from `@/gen`
 - `createQueryOptions` generates the same query key as `useSuspenseQuery` -- cache is shared automatically
-- `ensureQueryData` returns cached data if fresh, fetches if stale or missing
-- `<Suspense>` wraps the page component as a safety net (cache miss on client navigation)
+- `prefetchQuery` starts the fetch without blocking navigation -- `<Suspense>` handles loading if data isn't ready
 - `defaultPreload: 'intent'` in router config triggers the loader on link hover, making navigation near-instant
+- Always use named functions for route `component` (not anonymous arrow functions -- causes remounts)
 - NEVER use `callUnaryMethod` or manual `queryKey` in loaders -- `createQueryOptions` ensures key consistency with hooks
+- NEVER use `ensureQueryData` in loaders -- it blocks navigation until data loads
 
 ### Protected Routes (auth guard)
 
@@ -611,7 +628,7 @@ Rules:
 | Server state in Zustand | No cache invalidation, stale data | connect-query for server state, Zustand for client state |
 | Feature-specific components in `components/ui/` | Pollutes shared primitives | Feature components in `features/{feature}/components/` |
 | Mutation without query invalidation | Stale data shown to user | Always invalidate related queries in onSuccess |
-| Route without `loader` for server data | Loading flicker, client-side waterfall | `loader` + `createQueryOptions` + `ensureQueryData` |
+| Route without `loader` for server data | Loading flicker, client-side waterfall | `loader` + `createQueryOptions` + `prefetchQuery` |
 | `useQuery` for primary page data | Manual loading/error branching, no Suspense | `useSuspenseQuery` paired with route `loader` |
 | `callUnaryMethod` or manual `queryKey` in loader | Key mismatch with hooks, cache miss | `createQueryOptions` for consistent keys |
 | Business logic in page components | Hard to test, violates SRP | Extract to hooks, validation, or component logic |
