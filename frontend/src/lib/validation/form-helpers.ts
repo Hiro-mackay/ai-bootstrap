@@ -1,14 +1,16 @@
 import { useActionState } from 'react';
 import * as z from 'zod';
 
-export type FormState = {
-  fieldErrors: Record<string, string>;
+export type FormState<TFields extends string = string> = {
+  fieldErrors: Partial<Record<TFields, string>>;
   serverError?: string;
 };
 
-export const initialFormState: FormState = { fieldErrors: {} };
+export function initialFormState<TFields extends string = string>(): FormState<TFields> {
+  return { fieldErrors: {} };
+}
 
-export function fieldErrorProps(state: FormState, field: string) {
+export function fieldErrorProps<TFields extends string>(state: FormState<TFields>, field: TFields) {
   if (!state.fieldErrors[field]) return {};
   return {
     'aria-invalid': true as const,
@@ -19,7 +21,7 @@ export function fieldErrorProps(state: FormState, field: string) {
 export function validateFormData<T extends z.ZodType>(
   schema: T,
   formData: FormData,
-): { success: true; data: z.infer<T> } | { success: false; state: FormState } {
+): { success: true; data: z.infer<T> } | { success: false; state: FormState<string> } {
   const raw = Object.fromEntries(formData);
   const result = schema.safeParse(raw);
 
@@ -38,21 +40,25 @@ export function validateFormData<T extends z.ZodType>(
   return { success: false, state: { fieldErrors } };
 }
 
-export function useFormAction<S extends z.ZodType>(
+export function useFormAction<S extends z.ZodObject<z.ZodRawShape>>(
   schema: S,
   onSubmit: (data: z.infer<S>) => Promise<void>,
-) {
-  return useActionState(async (_prev: FormState, formData: FormData): Promise<FormState> => {
-    const result = validateFormData(schema, formData);
-    if (!result.success) return result.state;
-    try {
-      await onSubmit(result.data);
-      return initialFormState;
-    } catch (err) {
-      return {
-        fieldErrors: {},
-        serverError: err instanceof Error ? err.message : 'An error occurred',
-      };
-    }
-  }, initialFormState);
+): [FormState<Extract<keyof z.infer<S>, string>>, (payload: FormData) => void, boolean] {
+  type Fields = Extract<keyof z.infer<S>, string>;
+  return useActionState(
+    async (_prev: FormState<Fields>, formData: FormData): Promise<FormState<Fields>> => {
+      const result = validateFormData(schema, formData);
+      if (!result.success) return result.state as FormState<Fields>;
+      try {
+        await onSubmit(result.data);
+        return initialFormState<Fields>();
+      } catch (err) {
+        return {
+          fieldErrors: {},
+          serverError: err instanceof Error ? err.message : 'An error occurred',
+        };
+      }
+    },
+    initialFormState<Fields>(),
+  );
 }

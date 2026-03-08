@@ -9,13 +9,15 @@ type Config struct {
 	AppPort        string
 	LogLevel       string
 	AllowedOrigins []string
+	DatabaseURL    string
 }
 
 func Load() *Config {
 	return &Config{
 		AppPort:        getEnv("APP_PORT", "8080"),
 		LogLevel:       getEnv("LOG_LEVEL", "info"),
-		AllowedOrigins: parseOrigins(getEnv("ALLOWED_ORIGINS", "http://localhost:5173")),
+		AllowedOrigins: parseOrigins(getEnv("ALLOWED_ORIGINS", "http://localhost:3000")),
+		DatabaseURL:    getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/app_dev?sslmode=disable"),
 	}
 }
 

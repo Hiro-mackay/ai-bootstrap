@@ -14,6 +14,19 @@ tasks:
   default:
     cmd: task --list
 
+  setup:
+    desc: Initial project setup (run once after cloning)
+    cmds:
+      - cp -n .env.example .env 2>/dev/null || true
+      - task: go:install-tools
+      - task: infra:up
+      - task: infra:wait
+      - task: go:migrate:up
+      - task: proto:gen
+      - task: go:sqlc:generate
+      - cmd: bun install --frozen-lockfile
+        dir: frontend
+
   proto:gen:
     desc: Generate code from proto files
     cmd: buf generate
@@ -23,8 +36,24 @@ tasks:
     cmd: buf lint
 
   dev:
-    desc: Start all development servers
+    desc: Start infrastructure and all development servers
+    cmds:
+      - task: infra:up
+      - task: infra:wait
+      - task: go:migrate:up
+      - task: dev:servers
+
+  dev:servers:
+    internal: true
     deps: [go:dev, react:dev]
+
+  infra:wait:
+    internal: true
+    desc: Wait for PostgreSQL to be ready
+    cmd: |
+      until podman compose exec -T postgres pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} > /dev/null 2>&1; do
+        sleep 1
+      done
 
   test:
     desc: Run all tests
@@ -63,6 +92,32 @@ tasks:
     cmds:
       - task: go:ci
       - task: react:ci
+
+  infra:up:
+    desc: Start infrastructure services (PostgreSQL)
+    cmd: podman compose up -d
+
+  infra:down:
+    desc: Stop infrastructure services
+    cmd: podman compose down
+
+  infra:reset:
+    desc: Stop infrastructure and remove volumes
+    cmd: podman compose down -v
+
+  logs:db:
+    desc: Follow PostgreSQL logs
+    cmd: podman compose logs -f postgres
+
+  logs:backend:
+    desc: Follow Go backend logs (runs server in foreground)
+    cmds:
+      - task: go:dev
+
+  logs:frontend:
+    desc: Follow React frontend logs (runs server in foreground)
+    cmds:
+      - task: react:dev
 
   clean:
     desc: Remove all build artifacts

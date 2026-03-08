@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
 interface RootLayoutProps {
@@ -6,18 +7,27 @@ interface RootLayoutProps {
 
 export function RootLayout({ children }: RootLayoutProps) {
   return (
-    <div>
-      <header
-        style={{
-          padding: '1rem 2rem',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Your Project</h1>
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b px-6 py-4">
+        <nav className="flex items-center gap-6">
+          <h1 className="text-lg font-semibold">Your Project</h1>
+          <div className="flex gap-4">
+            <Link
+              className="text-sm text-muted-foreground hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
+              to="/"
+            >
+              Home
+            </Link>
+            <Link
+              className="text-sm text-muted-foreground hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
+              to="/todos"
+            >
+              Todos
+            </Link>
+          </div>
+        </nav>
       </header>
-      <main style={{ padding: '2rem' }}>{children}</main>
+      <main className="p-6">{children}</main>
     </div>
   );
 }

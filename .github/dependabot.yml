@@ -1,7 +1,3 @@
-# Dependabot configuration
-# During /setup (Step 4c), uncomment the ecosystem sections matching your stack.
-# GitHub Actions ecosystem is always active.
-
 version: 2
 
 updates:
@@ -19,58 +15,30 @@ updates:
     open-pull-requests-limit: 5
 
   # Node.js / npm dependencies
-  # Uncomment if your project uses package.json
-  # - package-ecosystem: npm
-  #   directory: /frontend
-  #   schedule:
-  #     interval: weekly
-  #     day: monday
-  #   commit-message:
-  #     prefix: "chore(deps):"
-  #   labels:
-  #     - dependencies
-  #   open-pull-requests-limit: 10
-  #   groups:
-  #     dev-dependencies:
-  #       dependency-type: development
-  #     production-dependencies:
-  #       dependency-type: production
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps):"
+    labels:
+      - dependencies
+    open-pull-requests-limit: 10
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
 
   # Go modules
-  # Uncomment if your project uses go.mod
-  # - package-ecosystem: gomod
-  #   directory: /backend
-  #   schedule:
-  #     interval: weekly
-  #     day: monday
-  #   commit-message:
-  #     prefix: "chore(deps):"
-  #   labels:
-  #     - dependencies
-  #   open-pull-requests-limit: 10
-
-  # Python / pip dependencies
-  # Uncomment if your project uses requirements.txt or pyproject.toml
-  # - package-ecosystem: pip
-  #   directory: /
-  #   schedule:
-  #     interval: weekly
-  #     day: monday
-  #   commit-message:
-  #     prefix: "chore(deps):"
-  #   labels:
-  #     - dependencies
-  #   open-pull-requests-limit: 10
-
-  # Rust / Cargo dependencies
-  # Uncomment if your project uses Cargo.toml
-  # - package-ecosystem: cargo
-  #   directory: /
-  #   schedule:
-  #     interval: weekly
-  #     day: monday
-  #   commit-message:
-  #     prefix: "chore(deps):"
-  #   labels:
-  #     - dependencies
-  #   open-pull-requests-limit: 10
+  - package-ecosystem: gomod
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps):"
+    labels:
+      - dependencies
+    open-pull-requests-limit: 10

@@ -1,3 +1,4 @@
+import './styles/globals.css';
 import { TransportProvider } from '@connectrpc/connect-query';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
@@ -19,11 +20,4 @@ const app = (
   </StrictMode>
 );
 
-if (import.meta.hot) {
-  if (!import.meta.hot.data.root) {
-    import.meta.hot.data.root = createRoot(rootElement);
-  }
-  import.meta.hot.data.root.render(app);
-} else {
-  createRoot(rootElement).render(app);
-}
+createRoot(rootElement).render(app);

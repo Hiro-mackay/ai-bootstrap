@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,9 +11,15 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/rs/cors"
+
 	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/gen/health/v1/healthv1connect"
+	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/gen/todo/v1/todov1connect"
+	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/infrastructure/database"
+	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/infrastructure/repository"
 	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/interface/handler"
 	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/interface/interceptor"
+	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/usecase/todo/command"
+	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/usecase/todo/query"
 	"github.com/Hiro-mackay/ai-bootstrap/backend/pkg/config"
 	"github.com/Hiro-mackay/ai-bootstrap/backend/pkg/logger"
 	"golang.org/x/net/http2"
@@ -20,8 +27,36 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	cfg := config.Load()
 	log := logger.New(cfg.LogLevel)
+
+	ctx := context.Background()
+
+	pool, err := database.NewPool(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Error("failed to connect to database", "error", err)
+		return err
+	}
+	defer pool.Close()
+
+	txManager := database.NewTxManager(pool)
+
+	todoRepo := repository.NewTodoRepository(txManager)
+
+	createCmd := command.NewCreateTodoCommand(todoRepo)
+	updateCmd := command.NewUpdateTodoCommand(todoRepo, txManager)
+	deleteCmd := command.NewDeleteTodoCommand(todoRepo)
+	getQuery := query.NewGetTodoQuery(todoRepo)
+	listQuery := query.NewListTodosQuery(todoRepo)
+
+	todoHandler := handler.NewTodoHandler(createCmd, updateCmd, deleteCmd, getQuery, listQuery)
+	healthHandler := handler.NewHealthHandler(pool)
 
 	interceptors := connect.WithInterceptors(
 		interceptor.RequestIDInterceptor(),
@@ -30,7 +65,8 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
-	mux.Handle(healthv1connect.NewHealthServiceHandler(&handler.HealthHandler{}, interceptors))
+	mux.Handle(healthv1connect.NewHealthServiceHandler(healthHandler, interceptors))
+	mux.Handle(todov1connect.NewTodoServiceHandler(todoHandler, interceptors))
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: cfg.AllowedOrigins,
@@ -65,16 +101,18 @@ func main() {
 
 	select {
 	case <-quit:
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if err := srv.Shutdown(ctx); err != nil {
+		if err := srv.Shutdown(shutdownCtx); err != nil {
 			log.Error("graceful shutdown failed", "error", err)
-			os.Exit(1)
+			return err
 		}
+		return nil
 	case err := <-errCh:
-		if err != nil {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error("server error", "error", err)
-			os.Exit(1)
+			return err
 		}
+		return nil
 	}
 }

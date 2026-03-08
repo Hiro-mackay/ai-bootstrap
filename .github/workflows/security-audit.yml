@@ -61,33 +61,39 @@ jobs:
         working-directory: frontend
         run: |
           if [[ -f bun.lock ]]; then
-            bun pm audit 2>/dev/null || true
+            bun pm audit
           elif [[ -f package-lock.json ]]; then
-            npm audit --audit-level=high || true
+            npm audit --audit-level=high
           elif [[ -f yarn.lock ]]; then
-            npx yarn-audit-fix --audit-level high || true
+            npx yarn-audit-fix --audit-level high
           elif [[ -f pnpm-lock.yaml ]]; then
-            npx pnpm audit --audit-level high || true
+            npx pnpm audit --audit-level high
           fi
+
+      - name: Setup Go
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
 
       - name: Go vulnerability check
         if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
         working-directory: backend
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./... || true
+          govulncheck ./...
 
       - name: Python safety check
         if: steps.check.outputs.exists == 'true' && matrix.name == 'python'
         run: |
           pip install pip-audit
-          pip-audit -r requirements.txt || true
+          pip-audit -r requirements.txt
 
       - name: Rust audit
         if: steps.check.outputs.exists == 'true' && matrix.name == 'rust'
         run: |
           cargo install cargo-audit
-          cargo audit || true
+          cargo audit
 
   codeql:
     name: CodeQL Analysis

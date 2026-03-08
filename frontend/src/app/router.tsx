@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { transport } from '@/lib/api/transport';
 import { routeTree } from '@/routeTree.gen';
@@ -10,6 +10,12 @@ export const queryClient = new QueryClient({
       retry: 1,
     },
   },
+  mutationCache: new MutationCache({
+    onError: (_error) => {
+      // Global mutation error handler
+      // Wire up a toast notification here (e.g. sonner, react-hot-toast)
+    },
+  }),
 });
 
 export const router = createRouter({

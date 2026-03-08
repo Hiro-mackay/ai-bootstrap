@@ -24,18 +24,27 @@ pre-commit:
           echo "$large"
           exit 1
         fi
-    lint:
+    frontend-lint:
       root: frontend
       run: bun run lint
-    typecheck:
+    frontend-typecheck:
       root: frontend
       run: bun run type-check
-    format:
+    frontend-format:
       root: frontend
       run: bun run format
+    go-vet:
+      root: backend
+      run: go vet ./...
+    go-lint:
+      root: backend
+      run: golangci-lint run --timeout 5m
 
 pre-push:
   commands:
-    build:
+    frontend-build:
       root: frontend
       run: bun run build
+    go-build:
+      root: backend
+      run: go build ./...

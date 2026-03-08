@@ -33,8 +33,29 @@ tasks:
       - task: test
       - task: build
 
+  migrate:up:
+    desc: Run database migrations up
+    cmd: migrate -path migrations -database "${DATABASE_URL}" up
+
+  migrate:down:
+    desc: Rollback last database migration
+    cmd: migrate -path migrations -database "${DATABASE_URL}" down 1
+
+  migrate:create:
+    desc: Create a new migration (usage -- task go:migrate:create -- NAME)
+    cmd: migrate create -ext sql -dir migrations -seq {{.CLI_ARGS}}
+
+  sqlc:generate:
+    desc: Generate Go code from SQL queries
+    cmd: sqlc generate
+
   install-tools:
     desc: Install development tools
-    cmd: go install github.com/air-verse/air@latest
+    cmds:
+      - go install github.com/air-verse/air@latest
+      - go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
     status:
       - which air
+      - which sqlc
+      - which migrate

@@ -82,7 +82,7 @@
       }
     },
     {
-      "includes": ["*.config.ts", "vitest.config.ts", "src/main.tsx"],
+      "includes": ["*.config.ts", "src/main.tsx"],
       "linter": {
         "rules": {
           "style": {

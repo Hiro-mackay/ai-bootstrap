@@ -1,10 +1,13 @@
-# {{PROJECT_NAME}}
+# ai-bootstrap
 
-{{PROJECT_DESCRIPTION}}
+Full-stack monorepo template with Go DDD backend and React frontend.
 
 ## Tech Stack
 
-{{TECH_STACK}}
+- Backend: Go 1.25, Connect-RPC, PostgreSQL, sqlc
+- Frontend: React 19, TanStack Router, TanStack Query, connect-query, Tailwind CSS, Bun
+- Proto: buf, protobuf
+- CI: GitHub Actions, golangci-lint, Biome, Vitest
 
 ## Guiding Documents
 
@@ -15,18 +18,11 @@
 
 ## Commands
 
-<!-- Fill in after project setup. Examples by stack:
-  Node/TS:  Lint: `npx eslint .`  Test: `npx vitest`  Build: `npm run build`
-  Go:       Lint: `golangci-lint run`  Test: `go test ./...`  Build: `go build ./...`
-  Python:   Lint: `ruff check .`  Test: `pytest`  Build: `python -m build`
--->
-- **Lint**: `{{LINT_COMMAND}}`
-- **Test**: `{{TEST_COMMAND}}`
-- **Build**: `{{BUILD_COMMAND}}`
-<!-- Uncomment during /setup if buf.yaml exists:
+- **Lint**: `task lint`
+- **Test**: `task test`
+- **Build**: `task build`
 - **Proto Generate**: `buf generate`
 - **Proto Lint**: `buf lint`
--->
 
 ## Project Rules
 
@@ -34,12 +30,6 @@
 
 ## Domain Context
 
-<!-- Summarize the project's domain here after setup.
-  This section helps Claude understand business terminology and constraints
-  without reading every doc. Update as the domain model evolves.
-
-  Example:
-  - Domain: E-commerce marketplace
-  - Core contexts: Catalog, Orders, Payments
-  - Key invariant: Order total must equal sum of line items
--->
+- Domain: Todo application (template scaffold)
+- Core contexts: Todo management
+- Key invariant: Todo status transitions follow pending -> completed -> pending cycle
