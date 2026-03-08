@@ -47,7 +47,7 @@ src/
     {name}-store.ts         # Zustand stores (auth, UI, domain-specific)
     __tests__/
   test/
-    setup.ts                # @testing-library/jest-dom import
+    setup.ts                # Bun test setup (jest-dom matchers, cleanup)
     test-utils.tsx          # createTestQueryClient, createWrapper
   index.html                        # HTML entry point (Bun bundler)
   env.ts                            # Type-safe environment variables (t3-env)
@@ -527,6 +527,13 @@ Rules:
 
 ## Testing
 
+Test runner: **Bun Test** (`bun test`). NOT Vitest.
+
+- Config: `bunfig.toml` `[test]` section (preloads happy-dom and setup.ts)
+- DOM: `@happy-dom/global-registrator` (preloaded via `bunfig.toml`)
+- Matchers: `@testing-library/jest-dom` (extended in `test/setup.ts` using `bun:test` expect)
+- Run: `task react:test` (never `bun test` directly)
+
 ### Test Utilities
 
 ```typescript
@@ -590,6 +597,7 @@ Rules:
 - Reset Zustand stores in `beforeEach` via `setState()`
 - Use `createWrapper()` for hooks that need TransportProvider + QueryClientProvider
 - Store tests need no wrapper (plain object testing)
+- Import `describe`, `it`, `expect`, `beforeEach`, `afterEach`, `mock` from `bun:test` (NOT from vitest)
 
 ## Anti-Patterns (Prohibited)
 
@@ -610,3 +618,4 @@ Rules:
 | Manual form validation | Inconsistent, no schema reuse | Zod schemas + `useFormAction` |
 | Global store for dialog open/close | Over-engineering, unnecessary coupling | Local `useState` in page component |
 | Cross-feature internal imports | Tight coupling between features | Import from feature's public API files only |
+| Vitest / Jest imports | Wrong test runner | Import from `bun:test` (`describe`, `it`, `expect`, `mock`) |

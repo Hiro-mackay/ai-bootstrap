@@ -7,7 +7,7 @@ Full-stack monorepo template with Go DDD backend and React frontend.
 - Backend: Go 1.25, Connect-RPC, PostgreSQL, sqlc
 - Frontend: React 19, TanStack Router, TanStack Query, connect-query, Tailwind CSS, Bun
 - Proto: buf, protobuf
-- CI: GitHub Actions, golangci-lint, Biome, Vitest
+- CI: GitHub Actions, golangci-lint, Biome, Bun Test
 
 ## Guiding Documents
 
