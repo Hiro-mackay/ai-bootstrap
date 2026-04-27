@@ -3,7 +3,8 @@ module github.com/Hiro-mackay/ai-bootstrap/backend
 go 1.25.0
 
 require (
-	connectrpc.com/connect v1.19.1
+	connectrpc.com/connect v1.19.2
+	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/rs/cors v1.11.1
 	golang.org/x/net v0.51.0
@@ -12,7 +13,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
