@@ -36,11 +36,11 @@ report "barrel files are banned (use direct file path imports)" \
       | grep -v '/gen/' | grep -v '/routes/' || true)"
 
 # --- Frontend: no cross-feature internal imports (sdd.md gate n) ---
-crossfeat="$(grep -rEn "from '@/features/" frontend/src/features --include='*.ts' --include='*.tsx' 2>/dev/null \
+crossfeat="$(grep -rEn "from ['\"]@/features/" frontend/src/features --include='*.ts' --include='*.tsx' 2>/dev/null \
   | while IFS= read -r line; do
       file=$(printf '%s' "$line" | cut -d: -f1)
       own=$(printf '%s' "$file" | sed -E 's#.*/features/([^/]+)/.*#\1#')
-      imp=$(printf '%s' "$line" | sed -E "s#.*from '@/features/([^/']+).*#\1#")
+      imp=$(printf '%s' "$line" | sed -E "s#.*from ['\"]@/features/([^/'\"]+).*#\1#")
       [ "$own" != "$imp" ] && printf '%s -> @/features/%s\n' "$file" "$imp"
     done || true)"
 report "features must not import another feature's internals (share via lib/)" "$crossfeat"
@@ -60,9 +60,11 @@ report "source files must stay under 300 lines" "$toolong"
 report "domain types must not carry json/db/gorm struct tags (DTOs live in the interface layer)" \
   "$(grep -rEn '(json|db|gorm):"' backend/internal/domain --include='*.go' 2>/dev/null | grep -v '_test.go:' || true)"
 
-# --- Frontend: no manual queryKey (sdd.md gate j) ---
-report "manual queryKey is banned (use createQueryOptions / connect-query for key management)" \
-  "$(grep -rEn 'queryKey' frontend/src --include='*.ts' --include='*.tsx' 2>/dev/null | grep -v '/gen/' || true)"
+# --- Frontend: no manual queryKey ARRAY (sdd.md gate j) ---
+# Bans hand-built key arrays (`queryKey: ['todos', id]`); allows the documented
+# `queryKey: createConnectQueryKey(...)` invalidation and createQueryOptions usage.
+report "manual queryKey arrays are banned (use createQueryOptions / createConnectQueryKey)" \
+  "$(grep -rEn 'queryKey:[[:space:]]*\[' frontend/src --include='*.ts' --include='*.tsx' 2>/dev/null | grep -v '/gen/' || true)"
 
 # --- Frontend: server state must not live in Zustand stores (sdd.md gate k) ---
 report "stores/ must not hold server state (server state belongs in TanStack Query)" \
