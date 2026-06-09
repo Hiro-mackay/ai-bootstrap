@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "context7": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"],
       "description": "Documentation lookup via Context7 - provides up-to-date docs for any library"

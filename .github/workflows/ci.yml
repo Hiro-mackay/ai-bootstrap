@@ -135,6 +135,9 @@ jobs:
         working-directory: backend
         run: go test ./... -race
 
+      - name: Domain coverage gate
+        run: sh scripts/check-coverage.sh
+
       - name: Vulnerability Check
         working-directory: backend
         run: |
@@ -210,3 +213,12 @@ jobs:
         run: |
           cargo install cargo-audit 2>/dev/null || true
           cargo audit 2>/dev/null || true
+
+  architecture:
+    name: Architecture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Architecture fitness tests
+        run: sh scripts/check-architecture.sh

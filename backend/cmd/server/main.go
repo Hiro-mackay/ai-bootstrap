@@ -12,16 +12,12 @@ import (
 	"connectrpc.com/connect"
 	"github.com/rs/cors"
 
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/gen/health/v1/healthv1connect"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/gen/todo/v1/todov1connect"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/infrastructure/database"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/infrastructure/repository"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/interface/handler"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/interface/interceptor"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/usecase/todo/command"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/usecase/todo/query"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/pkg/config"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/pkg/logger"
+	"github.com/your-org/your-project/backend/internal/gen/health/v1/healthv1connect"
+	"github.com/your-org/your-project/backend/internal/infrastructure/database"
+	"github.com/your-org/your-project/backend/internal/interface/handler"
+	"github.com/your-org/your-project/backend/internal/interface/interceptor"
+	"github.com/your-org/your-project/backend/pkg/config"
+	"github.com/your-org/your-project/backend/pkg/logger"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -45,17 +41,6 @@ func run() error {
 	}
 	defer pool.Close()
 
-	txManager := database.NewTxManager(pool)
-
-	todoRepo := repository.NewTodoRepository(txManager)
-
-	createCmd := command.NewCreateTodoCommand(todoRepo)
-	updateCmd := command.NewUpdateTodoCommand(todoRepo, txManager)
-	deleteCmd := command.NewDeleteTodoCommand(todoRepo)
-	getQuery := query.NewGetTodoQuery(todoRepo)
-	listQuery := query.NewListTodosQuery(todoRepo)
-
-	todoHandler := handler.NewTodoHandler(createCmd, updateCmd, deleteCmd, getQuery, listQuery)
 	healthHandler := handler.NewHealthHandler(pool)
 
 	interceptors := connect.WithInterceptors(
@@ -66,7 +51,6 @@ func run() error {
 
 	mux := http.NewServeMux()
 	mux.Handle(healthv1connect.NewHealthServiceHandler(healthHandler, interceptors))
-	mux.Handle(todov1connect.NewTodoServiceHandler(todoHandler, interceptors))
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: cfg.AllowedOrigins,

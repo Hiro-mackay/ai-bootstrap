@@ -49,6 +49,10 @@ tasks:
     desc: Generate Go code from SQL queries
     cmd: sqlc generate
 
+  tidy:
+    desc: Tidy go.mod dependencies
+    cmd: go mod tidy
+
   install-tools:
     desc: Install development tools
     cmds:

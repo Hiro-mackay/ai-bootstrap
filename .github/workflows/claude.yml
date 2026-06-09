@@ -1,0 +1,35 @@
+name: Claude Mention
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+# OPTIONAL (CI). Responds to @claude mentions on pull requests. Requires the
+# ANTHROPIC_API_KEY secret (no-op error without it; only trusted authors can
+# trigger). Delete it if you don't use CI -- local work needs no @claude mention.
+
+jobs:
+  claude:
+    # Only trusted authors may trigger Claude (prevents drive-by command/prompt injection).
+    if: >-
+      ${{ github.event.issue.pull_request
+      && contains(github.event.comment.body, '@claude')
+      && (github.event.comment.author_association == 'OWNER'
+          || github.event.comment.author_association == 'MEMBER'
+          || github.event.comment.author_association == 'COLLABORATOR') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # No explicit prompt: the action reads the @claude comment via its built-in
+      # trigger handling, so untrusted comment text is never splatted into an input.
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

@@ -1,7 +1,10 @@
 # Stack Reference Architecture
 
-Project-specific architecture guides for each tech stack.
-During `/setup`, rules from the matching stack doc are injected into CLAUDE.md.
+The **canonical** implementation patterns for each tech stack. New code should
+mirror these and the nearest existing slice when implementing. Keeping new code
+anchored here is what prevents per-project implementation drift.
+
+During `/setup`, rules from the matching stack doc are injected into AGENTS.md.
 
 ## Available References
 
@@ -11,5 +14,5 @@ During `/setup`, rules from the matching stack doc are injected into CLAUDE.md.
 ## Adding a New Stack
 
 1. Create `docs/stacks/{stack}.md` following the existing format
-2. Add detection logic in `.claude/commands/setup.md` Step 4b
-3. Define the CLAUDE.md rule summary to be injected during setup
+2. Add detection logic in `.claude/skills/setup/SKILL.md` Step 4b
+3. Define the AGENTS.md rule summary to be injected during setup

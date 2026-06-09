@@ -5,7 +5,7 @@ import (
 
 	"connectrpc.com/connect"
 
-	healthv1 "github.com/Hiro-mackay/ai-bootstrap/backend/internal/gen/health/v1"
+	healthv1 "github.com/your-org/your-project/backend/internal/gen/health/v1"
 )
 
 // DBPinger abstracts database health checking.

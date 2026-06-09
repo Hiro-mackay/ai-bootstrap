@@ -19,6 +19,7 @@ tasks:
     cmds:
       - cp -n .env.example .env 2>/dev/null || true
       - task: go:install-tools
+      - task: hooks
       - task: infra:up
       - task: infra:wait
       - task: go:migrate:up
@@ -26,6 +27,12 @@ tasks:
       - task: go:sqlc:generate
       - cmd: bun install --frozen-lockfile
         dir: frontend
+
+  hooks:
+    desc: Install git pre-commit hooks (lint, type-check, architecture checks)
+    cmds:
+      - command -v lefthook >/dev/null 2>&1 || go install github.com/evilmartians/lefthook@latest
+      - lefthook install
 
   proto:gen:
     desc: Generate code from proto files
@@ -72,11 +79,20 @@ tasks:
     cmds:
       - task: react:lint
 
+  arch:
+    desc: Architecture fitness tests (layering, barrels, cross-feature, file size, escape hatches)
+    cmd: sh scripts/check-architecture.sh
+
+  coverage:
+    desc: Domain test coverage gate (>= 80%)
+    cmd: sh scripts/check-coverage.sh
+
   lint:
     desc: Run all linters
     cmds:
       - task: go:lint
       - task: react:lint
+      - task: arch
 
   check:
     desc: Run all checks (proto lint, format, lint, type-check, build)
@@ -85,6 +101,7 @@ tasks:
       - task: go:lint
       - task: react:lint
       - task: react:type-check
+      - task: arch
       - task: go:build
 
   ci:

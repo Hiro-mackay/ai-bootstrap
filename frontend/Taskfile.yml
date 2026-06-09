@@ -17,6 +17,10 @@ tasks:
     desc: Generate route tree from file-based routes
     cmd: bun run routes:generate
 
+  shadcn:
+    desc: "Install a shadcn/ui primitive into components/primitives (usage: task react:shadcn -- button). Update components/primitives/INDEX.md after."
+    cmd: bunx shadcn@latest add {{.CLI_ARGS}}
+
   preview:
     desc: Preview production build
     cmd: bun run preview

@@ -1,7 +1,24 @@
 # AI-Native Development Bootstrap
 
 A GitHub template repository for teams adopting AI-native development practices.
-Provides project structure, Spec-Driven Development (SDD) workflow, and Claude Code integration out of the box.
+Provides project structure, Spec-Driven Development (SDD) workflow, and multi-agent
+integration (Claude Code + Codex) out of the box.
+
+## AI Agents
+
+- **Instructions**: `AGENTS.md` is the shared source of truth read by every agent.
+  `CLAUDE.md` imports it via `@AGENTS.md`; Codex reads `AGENTS.md` directly.
+- **Roles**: Claude Code is the primary implementer and drives the SDD workflow;
+  Codex provides a cross-provider review on substantial changes. See the
+  Agent Roles section in `AGENTS.md`.
+- **Enforcement split**: deterministic architecture gates (layering, barrels,
+  cross-feature imports, domain tags, manual queryKey, store state, file size) are
+  enforced by `scripts/check-architecture.sh` (`task arch`, lefthook, CI). The
+  semantic gates that need judgment are reviewed by `/triage-review`.
+- **Review**: `/triage-review` runs Claude + Codex on the PR **locally** (no CI) and
+  you pick the fixes -- the primary path. `.github/workflows/pr-review.yml` is the
+  **optional** CI equivalent (dormant until an API key secret exists; delete it if
+  you review locally only).
 
 ## Prerequisites
 
@@ -26,28 +43,35 @@ task dev     # Start Go + React dev servers
 
 1. Copy `.env.example` to `.env`
 2. Install Go tools (air, sqlc, migrate)
-3. Start PostgreSQL (`podman compose up -d`)
-4. Run database migrations
-5. Generate code from proto files (`buf generate`)
-6. Generate Go code from SQL queries (`sqlc generate`)
-7. Install frontend dependencies (`bun install`)
+3. Install git hooks (`lefthook`) so lint, type-check, and architecture checks run on every commit
+4. Start PostgreSQL (`podman compose up -d`)
+5. Run database migrations
+6. Generate code from proto files (`buf generate`)
+7. Generate Go code from SQL queries (`sqlc generate`)
+8. Install frontend dependencies (`bun install`)
 
 Each step can also be run individually -- see [Available Tasks](#available-tasks).
 </details>
 
 ## Development Workflow
 
-1. Run `/new-spec` in Claude Code to create a feature spec
-2. Review and approve the spec, plan, and task breakdown
-3. Implement task by task with atomic commits
-4. Run `task check` to verify linting, types, and build
-5. Run `task test` to ensure all tests pass
+The spec is not a document -- WHAT lives in the issue, HOW lives in the PR, and the
+link between them lives in the code (tests + comments). Per change:
+
+1. Open a GitHub issue: WHAT + Why (label `type` + `area`)
+2. `/impl <issue#>` -- research, plan (you approve), implement to green
+3. `/ship` -- quality gates, push, open the PR
+4. `/triage-review` -- Claude (+ Codex) review the PR, you pick the fixes
+5. Merge (Rebase and merge)
+
+See [`.claude/rules/git-workflow.md`](.claude/rules/git-workflow.md).
 
 ## Project Structure
 
 ```
 .
-├── CLAUDE.md                        # AI assistant project config
+├── AGENTS.md                        # AI agent project config (shared source of truth)
+├── CLAUDE.md                        # Imports AGENTS.md for Claude Code
 ├── Taskfile.yml                     # Root orchestrator (task dev/test/lint/ci)
 ├── compose.yml                      # Podman compose (PostgreSQL)
 ├── .env.example                     # Environment variable template
@@ -79,9 +103,9 @@ Each step can also be run individually -- see [Available Tasks](#available-tasks
     ├── constitution.md              # Project rules and principles
     ├── architecture.md              # System design (source of truth)
     ├── prd.md                       # PRD (domain boundaries)
-    ├── stacks/                      # Stack reference architecture
-    ├── decisions/                   # Architecture Decision Records
-    └── specs/                       # Feature specs (SDD workflow)
+    ├── harness.md                   # How the AI harness works (guides, sensors, the loop)
+    ├── stacks/                      # Stack reference architecture (canonical patterns)
+    └── decisions/                   # Architecture Decision Records
 ```
 
 ## Available Tasks
@@ -124,22 +148,22 @@ Each step can also be run individually -- see [Available Tasks](#available-tasks
 
 ## Spec-Driven Development
 
-SDD ensures every feature starts with a written specification:
+SDD here does **not** mean accumulating spec documents -- those rot the moment they
+are written and drift from the code. Instead:
 
-1. **Spec** -- Define the problem, user stories, and acceptance criteria
-2. **Plan** -- Map out components, architecture decisions, and risks
-3. **Tasks** -- Break work into small, dependency-ordered tasks
-4. **Implement** -- Build task by task, committing atomically
-5. **Verify** -- Confirm all acceptance criteria pass
+- **WHAT (+ Why)** lives in the GitHub issue
+- **HOW** is realized in the PR (code + atomic commits)
+- The **spec** (problem, user stories, acceptance criteria) is defined in plan mode and expressed as **tests**, not document files
+- The **link** between intent and code lives in the codebase: tests, and comments where the *why* is non-obvious
 
-Run `/new-spec` in Claude Code to start this workflow.
-See the [SDD Templates Guide](docs/specs/_templates/README.md) for details.
+Run it with `/impl <issue#>`. See [`.claude/rules/sdd.md`](.claude/rules/sdd.md)
+and [`docs/harness.md`](docs/harness.md).
 
 ## Links
 
 - [Constitution](docs/constitution.md)
 - [Architecture](docs/architecture.md)
 - [PRD](docs/prd.md)
+- [Harness Engineering](docs/harness.md)
+- [Git Workflow](.claude/rules/git-workflow.md)
 - [ADR Template](docs/decisions/000-template.md)
-- [Spec Template](docs/specs/_templates/spec.md)
-- [SDD Templates Guide](docs/specs/_templates/README.md)

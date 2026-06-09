@@ -1,77 +1,126 @@
-name: PR Review
+name: AI PR Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
   pull-requests: write
 
+# OPTIONAL (CI). The primary review path is LOCAL: `/triage-review` (Claude + Codex
+# on your machine, no CI minutes). This workflow runs the same semantic review in
+# CI for teams that want it -- it stays dormant until an API key secret exists, so
+# delete it if you review locally only.
+#
+# Cross-provider review of the SEMANTIC architecture gates that automated checks
+# cannot verify. The deterministic gates are already enforced by
+# scripts/check-architecture.sh (the `architecture` job in ci.yml); this review
+# owns the judgment-based gates in .claude/rules/sdd.md.
+#
+# Auto-on: each provider's review runs as soon as its API key secret exists --
+# ANTHROPIC_API_KEY (Claude) and/or OPENAI_API_KEY (Codex). No key -> that
+# provider's job is skipped, so fresh clones stay green.
+# Run `claude /install-github-app` to wire up the Claude side automatically.
+
 jobs:
-  ai-review:
-    name: AI Code Review
+  preflight:
+    name: Detect AI keys
+    runs-on: ubuntu-latest
+    outputs:
+      claude: ${{ steps.keys.outputs.claude }}
+      codex: ${{ steps.keys.outputs.codex }}
+    steps:
+      - id: keys
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "claude=$([ -n "$ANTHROPIC_API_KEY" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "codex=$([ -n "$OPENAI_API_KEY" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  claude-review:
+    name: Claude Review
+    needs: preflight
+    if: ${{ needs.preflight.outputs.claude == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get changed files
-        id: changed
-        run: |
-          FILES=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only)
-          echo "files<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$FILES" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-          echo "count=$(echo "$FILES" | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this pull request for the SEMANTIC architecture gates that
+            automated checks cannot verify. The deterministic gates (layer
+            dependencies, domain serialization tags, barrels, cross-feature
+            imports, manual queryKey, server state in stores, file size) are
+            ALREADY enforced by scripts/check-architecture.sh -- do NOT report
+            those.
+
+            Read .claude/rules/sdd.md (Architecture Gate) and
+            docs/constitution.md, then review ONLY the changed files for these
+            judgment-based gates:
+            - Value Objects exist where raw primitives represent domain concepts;
+              entities expose behavior methods, not getter/setter ceremony.
+            - UseCase layer: each operation is a Command/Query with an Execute
+              method and Input/Output structs; TransactionManager wraps
+              cross-entity writes.
+            - Interface layer exposes DTOs only (domain types never reach the API
+              surface); API types are generated from proto, not hand-written.
+            - Mutations define onSuccess handlers that invalidate related queries.
+            - Routes with server data define a loader using createQueryOptions +
+              prefetchQuery; page components read primary data via
+              useSuspenseQuery inside <Suspense>.
+
+            Report concrete violations as file:line with a one-line fix. Skip
+            gates not applicable to this diff. If clean, say so. Be concise.
+
+  codex-review:
+    name: Codex Review
+    needs: preflight
+    if: ${{ needs.preflight.outputs.codex == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Codex review
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt: |
+            Cross-provider review of the SEMANTIC architecture gates only. The
+            deterministic gates (layering, domain tags, barrels, cross-feature
+            imports, manual queryKey, server state in stores, file size) are
+            already enforced by scripts/check-architecture.sh -- do NOT report
+            those.
+
+            Read .claude/rules/sdd.md (Architecture Gate) and
+            docs/constitution.md, then review the changed files for the
+            judgment-based gates: value objects for domain primitives; entity
+            behavior methods; UseCase Command/Query with Execute + Input/Output;
+            TransactionManager for cross-entity writes; DTO-only interface layer
+            with generated API types; mutations invalidating queries on success;
+            route loaders with prefetchQuery and useSuspenseQuery for primary
+            data. Report file:line violations with a one-line fix; if clean, say
+            so. Be concise.
+          output-file: codex-output.md
+
+      - name: Post Codex review
+        if: ${{ steps.codex.outputs.final-message != '' }}
+        uses: actions/github-script@v7
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get PR diff
-        id: diff
-        run: |
-          DIFF=$(gh pr diff "${{ github.event.pull_request.number }}")
-          echo "diff<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$DIFF" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # ---------------------------------------------------------------
-      # AI Review Integration Point
-      #
-      # Replace or extend the step below with your preferred AI review
-      # tool. Examples:
-      #
-      #   - Claude: use Anthropic API with the diff as input
-      #   - OpenAI: use ChatGPT API for code review
-      #   - CodeRabbit: uses/coderabbitai/ai-pr-reviewer
-      #   - Custom: call any HTTP endpoint with the diff payload
-      #
-      # Required secrets (configure in repository settings):
-      #   ANTHROPIC_API_KEY  - for Claude-based reviews
-      #   OPENAI_API_KEY     - for OpenAI-based reviews
-      # ---------------------------------------------------------------
-      - name: AI Review (placeholder)
-        run: |
-          echo "AI review integration point"
-          echo "Changed files: ${{ steps.changed.outputs.count }}"
-          echo ""
-          echo "To enable AI-powered reviews, configure one of:"
-          echo "  - ANTHROPIC_API_KEY secret for Claude"
-          echo "  - OPENAI_API_KEY secret for OpenAI"
-          echo "  - Or integrate your preferred AI review tool"
-
-      - name: Post review summary
-        if: always()
-        run: |
-          gh pr comment "${{ github.event.pull_request.number }}" \
-            --body "**PR Review Summary**
-
-          Files changed: ${{ steps.changed.outputs.count }}
-
-          > Configure AI-powered reviews by adding your API keys to repository secrets.
-          > See \`.github/workflows/pr-review.yml\` for setup instructions."
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODEX_MSG: ${{ steps.codex.outputs.final-message }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `## Codex review (semantic gates)\n\n${process.env.CODEX_MSG}`,
+            });

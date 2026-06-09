@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/domain"
+	"github.com/your-org/your-project/backend/internal/domain"
 )
 
 // DBTX is the common interface satisfied by both *pgxpool.Pool and pgx.Tx.
