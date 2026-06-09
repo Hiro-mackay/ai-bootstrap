@@ -79,6 +79,14 @@ jobs:
             npm)  npm ci ;;
           esac
 
+      - name: Setup buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate proto
+        run: buf generate
+
       - name: Lint
         working-directory: frontend
         run: |
@@ -120,6 +128,14 @@ jobs:
         with:
           go-version-file: backend/go.mod
           cache: true
+
+      - name: Setup buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate proto
+        run: buf generate
 
       - name: Lint
         uses: golangci/golangci-lint-action@v6
