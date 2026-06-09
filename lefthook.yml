@@ -8,6 +8,9 @@ pre-commit:
           exit 1
         fi
     detect-secrets:
+      # A coarse local tripwire only; gitleaks (security-audit.yml) is the real
+      # scanner. --exclude=lefthook.yml avoids self-matching the patterns below,
+      # so secrets must not be placed in this file.
       run: |
         if git diff --cached --diff-filter=ACM -z --name-only | \
            xargs -0 grep -lE '(PRIVATE KEY|aws_secret|password=|api_key=)' \
