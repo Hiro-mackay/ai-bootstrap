@@ -67,7 +67,7 @@ After approval, for each task in order:
 4. One atomic commit per task: `<type>(<scope>): <imperative>`. Never `--no-verify` / `--force`.
 5. Do NOT push or open a PR -- that is `/ship`.
 
-If a task balloons, re-plan: edit the plan file, surface the divergence, continue. Never abandon the plan silently.
+If a task balloons, re-plan in plan mode: update the tasks, surface the divergence, continue. Never abandon the plan silently.
 
 ## 6. Architecture & coverage gate
 
