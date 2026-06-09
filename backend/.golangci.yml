@@ -16,13 +16,11 @@ linters:
       require-explanation: true
       require-specific: true
       allow-unused: false
+  exclusions:
+    paths:
+      - bin
+      - tmp
 
 formatters:
   enable:
     - gofumpt
-
-issues:
-  exclude-dirs:
-    - bin
-    - tmp
-    - vendor
