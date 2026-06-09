@@ -91,19 +91,19 @@ jobs:
         working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
-          $PM run lint --if-present
+          $PM run lint
 
       - name: Build
         working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
-          $PM run build --if-present
+          $PM run build
 
       - name: Test
         working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
-          $PM run test --if-present
+          $PM run test
 
       - name: Audit
         working-directory: frontend
@@ -138,7 +138,7 @@ jobs:
         run: buf generate
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           version: latest
           working-directory: backend
