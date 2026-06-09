@@ -87,6 +87,12 @@ tasks:
     desc: Domain test coverage gate (>= 80%)
     cmd: sh scripts/check-coverage.sh
 
+  build:
+    desc: Build backend and frontend
+    cmds:
+      - task: go:build
+      - task: react:build
+
   lint:
     desc: Run all linters
     cmds:
