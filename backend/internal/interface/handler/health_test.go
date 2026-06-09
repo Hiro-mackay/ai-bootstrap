@@ -6,8 +6,8 @@ import (
 
 	"connectrpc.com/connect"
 
-	healthv1 "github.com/Hiro-mackay/ai-bootstrap/backend/internal/gen/health/v1"
-	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/interface/handler"
+	healthv1 "github.com/your-org/your-project/backend/internal/gen/health/v1"
+	"github.com/your-org/your-project/backend/internal/interface/handler"
 )
 
 func TestHealthCheckWithoutPool(t *testing.T) {

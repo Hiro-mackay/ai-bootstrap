@@ -34,7 +34,7 @@
         "noDefaultExport": "warn"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "error"
       }
     }
   },

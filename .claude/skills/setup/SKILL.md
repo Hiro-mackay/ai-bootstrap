@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Project initialization wizard -- configures CLAUDE.md, architecture, PRD, and first ADR
+description: Personalize this template for a new project -- identity, architecture/PRD docs, domain context
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
@@ -14,197 +14,71 @@ allowed-tools:
 
 # Project Setup Wizard
 
-## Step 1: Project Name
+Personalizes the template (identity + docs). This is **not** the dev-environment
+bootstrap -- that is `task setup` (deps, DB, codegen, git hooks), which the user
+runs separately. The stack is fixed: Go DDD backend + React/Bun frontend + buf
+proto; do not ask the user to "choose a stack".
 
-Ask for the project name. Validate: lowercase, hyphens allowed, no spaces or special characters. Store as `$PROJECT_NAME`.
+## Step 1: Identity
 
-## Step 2: Tech Stack
+Ask for:
+- **Project name** -- lowercase, hyphens allowed, no spaces (`$PROJECT_NAME`).
+- **One-line description** (`$PROJECT_DESCRIPTION`).
+- **Go module path** -- e.g. `github.com/org/project`. Validate `github.com/{org}/{project}` (lowercase, no spaces, no trailing slash); reject otherwise.
 
-Ask the user to describe their tech stack (e.g. "Next.js + TypeScript + Prisma + PostgreSQL"). Store as `$TECH_STACK`.
+## Step 2: Scope
 
-## Step 3: Description
+Ask: full-stack (default), **go-only**, or **react-only**?
+- go-only: ask to remove `frontend/`; if yes, delete it, remove the `react` include from `Taskfile.yml`, drop the npm section from `.github/dependabot.yml`, and trim the Frontend line from `AGENTS.md` Tech Stack / `docs/architecture.md`.
+- react-only: same, mirrored for `backend/` (remove `go` include, `gomod` dependabot section, proto if unused).
+- full-stack: nothing to remove.
 
-Ask for a one-line project description. Store as `$PROJECT_DESCRIPTION`.
+## Step 3: Apply identity (replace placeholders)
 
-## Step 3a: Monorepo Personalization
+1. **Module path** -- replace `github.com/your-org/your-project` in `backend/go.mod`, all `backend/**/*.go`, **and `buf.gen.yaml`** (the `go_package_prefix`). Missing `buf.gen.yaml` here breaks regenerated proto -- do not skip it.
+2. **package.json** -- `"name": "your-project"` -> `$PROJECT_NAME` in `frontend/package.json`.
+3. **HTML title** -- `frontend/src/index.html` `<title>` -> `$PROJECT_NAME`.
+4. **AGENTS.md** -- replace `{{PROJECT_NAME}}` and `{{PROJECT_DESCRIPTION}}` (Tech Stack and Commands are already concrete -- do not touch them).
+5. **README.md** -- title -> `$PROJECT_NAME`; update the description paragraph.
 
-> Only run this step if `$TECH_STACK` includes Go and/or React. Skip entirely for stacks that don't include either.
+## Step 4: Architecture doc
 
-1. Go module path replacement:
-   - Ask the user for their Go module path (e.g. `github.com/org/project`)
-   - Validate: must match `github.com/{org}/{project}` format (lowercase, no spaces, no trailing slash). Reject empty strings, paths with uppercase letters, or missing segments.
-   - Replace `github.com/your-org/your-project` in `backend/go.mod` and all `backend/**/*.go` files with the provided module path
+Fill `docs/architecture.md`:
+- **Pre-fill the Technology Stack table** from the known stack: Language = Go 1.25 / TypeScript (React 19); Framework = Connect-RPC / TanStack Router+Query; API Protocol = Connect (protobuf); Database = PostgreSQL (sqlc); Infrastructure = podman compose (local) + <user's target>; CI/CD = GitHub Actions + lefthook.
+- **Interview** for the narrative: System Overview, Component Architecture, Data Flow. Reference `docs/stacks/` for the layer structure.
+- Leave the Observability / Error-handling / Operations tables as placeholders for the user to fill as the system matures (Article IV: architecture.md stays current). Note this in the summary.
 
-2. React package.json name replacement:
-   - Replace `"name": "your-project"` in `frontend/package.json` with `$PROJECT_NAME`
+Summarize before writing.
 
-3. HTML title replacement:
-   - Replace the `<title>` content in `frontend/src/index.html` with `$PROJECT_NAME`
+## Step 5: PRD (domain) -- optional
 
-4. Optional stack removal:
-   - If Go-only: ask if they want to remove the `frontend/` directory
-   - If React-only: ask if they want to remove the `backend/` directory
-   - If a directory is removed, update Taskfile.yml to remove the corresponding include
+`docs/prd.md`; the `ddd-principles` rule is auto-loaded. Interview: domain overview,
+core vs supporting subdomains, ubiquitous language, bounded contexts, aggregates
+(root/entities/VOs/invariants), domain events, context map. Skipping is fine -- PRD
+is recommended, not blocking.
 
-5. Print: "Monorepo personalized. Run `task dev` to verify."
+## Step 6: Domain Context in AGENTS.md
 
-## Step 4: Apply Configuration
+Populate the AGENTS.md `## Domain Context` section: domain name, core bounded
+contexts, one-line key invariant. If PRD was skipped, ask for a brief summary.
 
-Replace placeholders using the Edit tool.
+## Step 7: Constitution review -- optional
 
-**CLAUDE.md:** Replace `{{PROJECT_NAME}}`, `{{TECH_STACK}}`, `{{PROJECT_DESCRIPTION}}`.
+Show `docs/constitution.md`; ask whether the principles fit and offer to adjust or
+add project-specific articles.
 
-**README.md:** Replace the title with `$PROJECT_NAME`. Update the description paragraph.
+## Step 8: Finalize
 
-## Step 4a: Configure Commands
-
-Based on `$TECH_STACK` from Step 2, propose lint/test/build commands appropriate for the stack. Present them to the user for confirmation.
-
-Once confirmed, replace `{{LINT_COMMAND}}`, `{{TEST_COMMAND}}`, `{{BUILD_COMMAND}}` in `CLAUDE.md` using the Edit tool.
-
-If `buf.yaml` exists in the project root, uncomment the Proto commands in `CLAUDE.md` (remove the surrounding `<!-- ... -->` comment markers from the Proto Generate and Proto Lint lines).
-
-Common defaults (Taskfile always present in this template):
-- **Full-stack (Go + React)**: `task lint` / `task test` / `task ci`
-- **Go-only**: `task go:lint` / `task go:test` / `task go:ci`
-- **React-only**: `task react:lint` / `task react:test` / `task react:ci`
-
-## Step 4b: Stack Architecture Rules
-
-Based on `$TECH_STACK` from Step 2, detect the stack and inject architecture rules into CLAUDE.md's "Project Rules" section.
-
-**Important:** Before appending any block, check if CLAUDE.md already contains the corresponding header (e.g., `### Go DDD Architecture` or `### React Architecture`). Skip injection if the header already exists to prevent duplication on re-runs.
-
-### Go Detection
-
-If `$TECH_STACK` contains "go" or "golang" (case-insensitive):
-1. Read `docs/stacks/go-ddd.md`
-2. Append to CLAUDE.md Project Rules:
+Confirm `task setup` has been run (deps, DB, migrations, codegen, git hooks). If not,
+tell the user to run it. Then print:
 
 ```
-### Go DDD Architecture (see docs/stacks/go-ddd.md)
-- Directory: backend/cmd/ + backend/internal/{domain,usecase,infrastructure,interface}/ + backend/pkg/
-- Domain layer: exported fields, no JSON/DB tags, behavior methods, repository + TransactionManager interfaces
-- UseCase layer: Command/Query with Execute + Input/Output, transaction boundaries here
-- Infrastructure layer: one file per concern, BaseRepository composition, AppError conversion
-- Interface layer: request/response DTOs, presenter, error handler middleware
-```
+Personalized: $PROJECT_NAME
 
-### React Detection
-
-If `$TECH_STACK` contains "react", "next.js", or "nextjs" (case-insensitive):
-1. Read `docs/stacks/react-bun.md`
-2. Append to CLAUDE.md Project Rules:
-
-```
-### React Architecture (see docs/stacks/react-bun.md)
-- Directory: frontend/src/app/ (router) + frontend/src/features/{feature}/ + frontend/src/lib/ + frontend/src/stores/
-- Package-by-feature: pages in features/{feature}/pages/, components in features/{feature}/components/
-- No barrel exports (index.ts) -- direct file path imports only
-- Data fetching: TanStack Query mandatory, connect-query auto-managed keys from proto definitions
-- API client: connect-query with generated types from protobuf via `buf generate`
-- Client state: Zustand for auth/UI/ephemeral state, TanStack Query for server state
-- Validation: Zod schemas in lib/validation/schemas.ts (primitives) + features/*/validation.ts (composed)
-```
-
-### Full-Stack Detection
-
-If both Go and React/Next.js are detected, inject both rule blocks.
-
-## Step 4c: Configure Dependabot
-
-Based on `$TECH_STACK` from Step 2, uncomment the matching ecosystem sections in `.github/dependabot.yml`:
-
-- **React/Node/Bun**: Uncomment the `npm` ecosystem section (directory: `/frontend`)
-- **Go**: Uncomment the `gomod` ecosystem section (directory: `/backend`)
-- **Python**: Uncomment the `pip` ecosystem section
-- **Rust**: Uncomment the `cargo` ecosystem section
-
-Leave non-matching sections commented out. The `github-actions` ecosystem is always active.
-
-## Step 5: Architecture Interview
-
-Fill in `docs/architecture.md` by interviewing the user:
-
-1. "What is the overall system purpose?" -> fill `{{SYSTEM_OVERVIEW}}`
-2. "What are the main components and their roles?" -> fill `{{COMPONENT_ARCHITECTURE}}`
-3. "How does data flow through the system?" -> fill Data Flow section
-4. "What is the deployment/infrastructure setup?" -> fill Infrastructure section
-5. Fill the Technology Stack table (`{{LANG}}`, `{{FW}}`, `{{DB}}`, `{{INFRA}}`, `{{CICD}}`)
-6. If stack reference docs exist in `docs/stacks/`:
-   - Ask: "The reference architecture defines a standard directory structure. Use it as-is, or customize?"
-   - If customized, create an ADR documenting the deviation
-   - Reference the stack doc in the Component Architecture section
-
-Summarize back to the user for confirmation before writing.
-
-## Step 6: Constitution Review
-
-Show `docs/constitution.md` and ask:
-- "Do these principles match your project goals?"
-- "Would you like to adjust any articles or add project-specific principles?"
-
-If yes, help them edit the file.
-
-## Step 7: First ADR
-
-Create `docs/decisions/001-tech-stack.md` from the `000-template.md` template.
-Record the tech stack choice as the first Architecture Decision Record.
-
-## Step 8: PRD Creation
-
-Read `docs/prd.md` as the base. The `ddd-principles` rule is auto-loaded. Use it to guide the interview:
-
-1. "Describe the domain this project operates in" -> Domain Overview
-2. "Which parts are core to your business vs supporting/generic?" -> Subdomains table
-3. "What are the key terms/concepts? Do any terms mean different things in different areas?" -> Ubiquitous Language table
-4. "Where do language or responsibility boundaries exist?" -> Bounded Contexts
-5. For each context: "What are the main business objects? Which must be consistent together?" -> Aggregates (root entity, entities, value objects, invariants)
-6. "What important things happen in the system that other parts need to know about?" -> Domain Events
-7. "How do these contexts relate to each other?" -> Context Map
-
-Write result to `docs/prd.md`. If the user wants to skip, that's fine -- PRD is recommended but not blocking.
-
-## Step 8a: Domain Context Summary
-
-Based on the PRD from Step 8, populate the Domain Context section in `CLAUDE.md` with a concise summary:
-- Domain name
-- Core bounded contexts
-- Key invariant (one-liner)
-
-If Step 8 was skipped, ask the user for a brief domain summary instead.
-
-## Step 8b: Configure .gitignore
-
-Based on `$TECH_STACK` from Step 2, review `.gitignore` and add any missing stack-specific patterns.
-
-**Important:** Read the existing `.gitignore` first to avoid duplicate entries. Only append patterns that are not already present.
-
-Common patterns to check:
-- **Go**: `bin/`, `tmp/`
-- **React/Node**: `node_modules/`, `dist/`
-- **Next.js**: `.next/`, `.turbo/`
-- **Python**: `__pycache__/`, `*.egg-info/`, `.venv/`
-- **Rust**: `target/`
-
-Confirm with the user before writing.
-
-## Step 9: Finalize
-
-Print a summary:
-
-```
-Project initialized successfully!
-
-  Name:        $PROJECT_NAME
-  Stack:       $TECH_STACK
-  Description: $PROJECT_DESCRIPTION
-
-Next steps:
-  1. Run 'task dev' to start the development server
-  2. Review CLAUDE.md and adjust project rules
-  3. Review docs/constitution.md and customize principles
-  4. Review docs/architecture.md and fill remaining placeholders
-  5. Review docs/prd.md and refine domain boundaries
-  6. Create your first feature spec with /new-spec
+Next:
+  1. task setup   (if not done) -- deps, DB, codegen, git hooks
+  2. task dev     -- start the dev servers
+  3. Review docs/architecture.md, docs/prd.md, docs/constitution.md
+  4. First change: open a GitHub issue (WHAT + Why), then /impl <issue#>
+     (mirror docs/stacks and existing slices for structure).
 ```

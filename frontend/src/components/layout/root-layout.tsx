@@ -18,12 +18,6 @@ export function RootLayout({ children }: RootLayoutProps) {
             >
               Home
             </Link>
-            <Link
-              className="text-sm text-muted-foreground hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
-              to="/todos"
-            >
-              Todos
-            </Link>
           </div>
         </nav>
       </header>

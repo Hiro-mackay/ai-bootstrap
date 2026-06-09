@@ -8,15 +8,18 @@ but think carefully before removing -- these exist because violations are costly
 
 ## Part 1: Development Process
 
-### Article I: Specs Before Implementation
+### Article I: Intent Before Implementation
 
-No feature work begins without a written spec.
-Specs are created from templates in `docs/specs/` and must be reviewed before implementation starts.
+No feature work begins without stated intent -- but the spec lives in the issue,
+plan mode, tests, and code, **not in spec document files**. Documents rot the
+moment they are written and drift from the code; code and tests are the single
+source of truth.
 
-- A spec defines the problem, user stories, and acceptance criteria
-- Implementation without a spec is rework waiting to happen
-- Bug fixes require at minimum: problem statement + reproduction steps
-- Specs are scoped to a single bounded context as defined in `docs/prd.md` -- cross-context changes go through the context map
+- **WHAT (+ Why)** is captured in the GitHub issue; **HOW** is realized in the PR
+- The spec (problem, user stories, acceptance criteria) is defined in plan mode and expressed as tests -- never as a per-feature spec document
+- The link between intent and implementation lives in the codebase as living information: tests, and comments where the *why* is non-obvious
+- Scope each change to a single bounded context defined in `docs/prd.md`; cross-context changes go through the context map
+- Bug fixes require at minimum: a reproduction (a failing test) before the fix
 
 ### Article II: Tests Are Executable Specs
 

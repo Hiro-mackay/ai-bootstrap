@@ -10,7 +10,8 @@ pre-commit:
     detect-secrets:
       run: |
         if git diff --cached --diff-filter=ACM -z --name-only | \
-           xargs -0 grep -lE '(PRIVATE KEY|aws_secret|password=|api_key=)' 2>/dev/null; then
+           xargs -0 grep -lE '(PRIVATE KEY|aws_secret|password=|api_key=)' \
+           --exclude=lefthook.yml 2>/dev/null; then
           echo "Potential secret detected in staged files. Remove before committing."
           exit 1
         fi
@@ -39,9 +40,19 @@ pre-commit:
     go-lint:
       root: backend
       run: golangci-lint run --timeout 5m
+    architecture:
+      run: sh scripts/check-architecture.sh
 
 pre-push:
   commands:
+    go-test:
+      root: backend
+      run: go test ./... -race
+    coverage:
+      run: sh scripts/check-coverage.sh
+    frontend-test:
+      root: frontend
+      run: bun test
     frontend-build:
       root: frontend
       run: bun run build

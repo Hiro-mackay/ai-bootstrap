@@ -67,7 +67,7 @@ src/
 ### Mandatory
 
 - Components MUST live in `features/{feature}/components/`
-- `components/ui/` is ONLY for design system primitives (shadcn/Radix)
+- `components/primitives/` is ONLY for design system primitives (shadcn); read its `INDEX.md` and reuse before writing UI (`.claude/rules/use-primitives.md`)
 - `components/layout/` is ONLY for app shell components (root, auth, main layouts)
 - Feature-specific business logic MUST NOT live in `components/`, `lib/`, or `stores/` (these host shared infrastructure and cross-cutting state only)
 - No cross-feature internal imports (import only from feature's public files)
@@ -630,7 +630,7 @@ Rules:
 | Custom error class hierarchy | Duplicates `ConnectError` | Use `ConnectError` and `Code` directly |
 | Manual API type definitions | Type drift from backend | Protobuf generates types via `buf generate` |
 | Server state in Zustand | No cache invalidation, stale data | connect-query for server state, Zustand for client state |
-| Feature-specific components in `components/ui/` | Pollutes shared primitives | Feature components in `features/{feature}/components/` |
+| Feature-specific components in `components/primitives/` | Pollutes shared primitives | Feature components in `features/{feature}/components/` |
 | Mutation without query invalidation | Stale data shown to user | Always invalidate related queries in onSuccess |
 | Route without `loader` for server data | Loading flicker, client-side waterfall | `loader` + `createQueryOptions` + `prefetchQuery` |
 | `useQuery` for primary page data | Manual loading/error branching, no Suspense | `useSuspenseQuery` paired with route `loader` |

@@ -1,10 +1,12 @@
-## Spec Reference
+## Issue (WHAT)
 
-<!-- Link the spec this PR implements. e.g., docs/specs/my-feature/spec.md -->
+<!-- The issue defines WHAT + Why. This PR is the HOW. Use "Closes #123". -->
+
+Closes #
 
 ## Summary
 
-<!-- Briefly describe what this PR does and why. -->
+<!-- Briefly describe HOW this PR realizes the issue. -->
 
 ## Changes
 
