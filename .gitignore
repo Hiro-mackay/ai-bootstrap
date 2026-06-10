@@ -35,6 +35,9 @@ frontend/src/gen/
 backend/internal/infrastructure/database/sqlcgen/*.go
 frontend/src/routeTree.gen.ts
 
+# go-task fingerprint cache (sources/generates state for codegen-ensuring guards)
+.task/
+
 # Dependencies
 node_modules/
 vendor/

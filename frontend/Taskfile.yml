@@ -11,11 +11,27 @@ tasks:
 
   build:
     desc: Build for production (generates routes first)
+    deps: [install]
     cmd: bun run build
 
   routes:generate:
     desc: Generate route tree from file-based routes
+    deps: [install]
+    sources:
+      - src/routes/**/*.tsx
+      - src/routes/**/*.ts
+    generates:
+      - src/routeTree.gen.ts
     cmd: bun run routes:generate
+
+  # node_modules is gitignored and absent in a fresh worktree; the lint/type-check/test
+  # guards below need it (and the biome/tsc binaries). Skipped when already installed,
+  # so this is a no-op on every commit after the first.
+  install:
+    internal: true
+    status:
+      - test -d node_modules
+    cmd: bun install --frozen-lockfile
 
   shadcn:
     desc: "Install a shadcn/ui primitive into components/primitives (usage: task react:shadcn -- button). Update components/primitives/INDEX.md after."
@@ -27,6 +43,7 @@ tasks:
 
   test:
     desc: Run tests
+    deps: [routes:generate]
     cmd: bun run test
 
   test:watch:
@@ -35,14 +52,17 @@ tasks:
 
   lint:
     desc: Lint and format check
+    deps: [install]
     cmd: bun run lint
 
   format:
     desc: Lint and format with auto-fix
+    deps: [install]
     cmd: bun run format
 
   type-check:
     desc: Type check
+    deps: [routes:generate]
     cmd: bun run type-check
 
   clean:
