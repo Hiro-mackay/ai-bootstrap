@@ -28,8 +28,7 @@ pre-commit:
           echo "$large"
           exit 1
         fi
-    # Guards below delegate to Taskfile targets -- the single definition of each
-    # check (see docs/harness.md). Never inline a raw check command here.
+    # Guards delegate to Taskfile targets (the single definition); see docs/harness.md.
     proto-lint:
       run: task proto:lint
     go-lint:
@@ -42,6 +41,7 @@ pre-commit:
       run: task react:type-check
     frontend-format:
       run: task react:format
+      stage_fixed: true
     architecture:
       run: task arch
 
