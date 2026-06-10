@@ -1,11 +1,9 @@
 name: CI
 
-# Build-only smoke. The single question CI answers is "does the committed state
-# build from a clean checkout?" -- something local incremental builds can mask.
-# Every correctness guard (lint, vet, tidy, type-check, test, coverage,
-# architecture) is defined once in the Taskfile and enforced locally via lefthook
-# + the /impl,/ship agent loop; periodic supply-chain/security monitoring lives in
-# security-audit.yml. CI does not duplicate those. See docs/harness.md.
+# Build-only smoke: does the committed state build from a clean checkout?
+# Correctness guards (lint, tidy, type-check, test, coverage, architecture) are
+# defined once in the Taskfile and run locally (lefthook + the agent loop);
+# supply-chain/security monitoring lives in security-audit.yml. See docs/harness.md.
 
 on:
   push:
@@ -111,6 +109,11 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
 
+      - name: Setup Task
+        uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup buf
         uses: bufbuild/buf-setup-action@v1
         with:
@@ -120,5 +123,4 @@ jobs:
         run: buf generate
 
       - name: Build
-        working-directory: backend
-        run: go build ./...
+        run: task go:build:check
