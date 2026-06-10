@@ -34,6 +34,13 @@ dependency, breaking schema change, auth/authz change, new bounded context,
 context-map relationship change, new infrastructure component. Everyday work needs
 no ADR -- the issue + PR + code comments carry the rest.
 
+These triggers **are** the `decide` class of the approve model (`docs/harness.md`,
+#31): a change with no mechanizable oracle -- a trade-off a human must decide and
+record. `scripts/classify-change.sh` routes such a diff to `decide`; the merge then
+requires the ADR. A change touching the domain layer routes to `confirm` (a human-held
+oracle -- confirm the assumption); everything confined + mechanizable + evidence-complete
+routes to `auto` and may auto-merge (`.claude/rules/git-workflow.md`).
+
 ## Architecture Gate (step 7)
 
 Before verification, check all new/modified files against `docs/stacks/*`:

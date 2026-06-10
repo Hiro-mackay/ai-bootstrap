@@ -14,6 +14,28 @@ agent acts) or a **sensor** (feedback -- catches mistakes after). Sensors are
 (judgment, run selectively). The strongest guide is executable; the strongest
 sensor is deterministic.
 
+## When is it approvable? (the approve model)
+
+Guides and sensors shape and catch, but neither says *when the sensor output is
+enough to ship*. That is a risk judgment: `P(wrong) × cost(wrong) < threshold`.
+Coverage, naming, behavior are evidence that lowers `P(wrong)`, not approval itself.
+The bar is **variable** -- set by how much you must hold in your head to be confident
+(confinement), not by diff size. The harness encodes this as two gates (#31):
+
+1. **Oracle** -- does a verification oracle exist, and where? *Mechanizable* (a
+   test/check confirms) → gate 2. *Human-held* (a domain assumption only a person can
+   confirm) → a human confirms. *None* (a trade-off with no right answer) → a human
+   decides + ADR. The `.claude/rules/sdd.md` ADR triggers **are** the no-oracle class.
+2. **Confinement** -- is the effect local and observable? Confined + evidence-complete
+   → **auto-mergeable**; unconfined → a human, regardless of size.
+
+`scripts/classify-change.sh` computes this into `auto / confirm / decide`, and
+`.claude/rules/git-workflow.md` grants auto-merge to a green `auto`. Auto-merge is
+**routing, and a ratchet** -- it grows one encoded pattern at a time and never reaches
+100%, because spec-correctness (is the intent itself right) is irreducibly human. The
+goal is to shrink the human gate to *that* core plus domain-assumption confirmation
+and trade-off decisions, not to remove it.
+
 ## Three pillars
 
 ### 1. Guides (feedforward)
@@ -33,6 +55,7 @@ sensor is deterministic.
 | Escape-hatch bans -- `any` (biome `noExplicitAny: error`), TODO/FIXME + lint-suppression (`godox`/`nolintlint` for Go, `check-architecture.sh` for TS) | Computational. Closes the "quiet workaround" loopholes |
 | `scripts/check-architecture.sh` -- layering, no-barrel, no cross-feature imports, file size, no domain serialization tags, no manual queryKey, no server state in stores, no escape hatches | Computational, architecture-specific. The one custom sensor |
 | `scripts/check-coverage.sh` -- domain test coverage >= 80% (skips until domain logic exists) | Computational. Domain only; usecase/infra covered by shipped tests + review |
+| `scripts/classify-change.sh` -- routes the diff into auto/confirm/decide by oracle × confinement (#31) | Computational categorizer (not a gate, exits 0). Decides which class a change is, hence whether a human is required |
 | `/triage-review` -- Claude `/review` + Codex adversarial-review locally on the PR, you pick the fixes | Inferential, **local** (no CI). The primary review path |
 | `.github/workflows/pr-review.yml` -- the same semantic review in CI | Inferential, optional remote equivalent (auto-on when API keys exist) |
 

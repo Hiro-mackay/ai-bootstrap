@@ -15,7 +15,12 @@ gh issue create -t "<title>" -l <type> -l area:<web|api>   # work unit = issue
 ```
 
 `/impl` stops only at plan approval; `/ship` and merge are the human "visible to
-others" moments. There is no auto-merge -- spec correctness stays a human call.
+others" moments. Merge is **routed by the approve model** (`docs/harness.md`, #31):
+`task classify` sorts the change into `auto / confirm / decide`. Only a green `auto`
+(confined + mechanizable + evidence-complete) auto-merges -- the deterministic gates
+are its sign-off, and `auto` is non-substantial by construction, so this keeps
+AGENTS.md's "no single provider signs off substantial changes". `confirm` and `decide`
+stay a human call, because spec correctness is irreducibly human.
 
 ## Branch naming
 
