@@ -46,6 +46,6 @@ comments (the living link); no spec or plan documents are kept -- they rot.
 ## Parallel work (optional)
 
 For several changes at once, use git worktrees so each has its own checkout and dev
-stack. Run `/impl` inside the feature worktree. (The infra side -- isolating ports
-and containers per worktree -- is project-specific; wire it into the Taskfile when
-you need concurrent `task dev`.)
+stack. Create the worktree however you like, then run `task worktree:init` once in it
+and `task dev` -- ports and containers are isolated per worktree automatically. Run
+`/impl` inside the feature worktree. See `.claude/rules/multi-worktree-dev.md`.
