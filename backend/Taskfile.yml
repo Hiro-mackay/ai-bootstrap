@@ -12,15 +12,28 @@ tasks:
 
   build:check:
     desc: Compile all packages (clean-build smoke for CI)
+    deps: [gen-proto]
     cmd: go build ./...
 
   test:
     desc: Run tests
+    deps: [gen-proto]
     cmd: go test ./... -v -race -count=1
 
   lint:
     desc: Run linter (govet + staticcheck deprecation incl.)
+    deps: [gen-proto]
     cmd: golangci-lint run
+
+  # Backend code imports backend/internal/gen (proto), which is gitignored and absent
+  # in a fresh worktree. buf must run from the repo root (buf.gen.yaml paths are
+  # root-relative), so this bridges to the single root `proto:gen` definition rather
+  # than copying `buf generate`. proto:gen is fingerprinted, so this is a no-op when
+  # the generated code is already up to date.
+  gen-proto:
+    internal: true
+    dir: '{{.ROOT_DIR}}'
+    cmd: task proto:gen
 
   vuln:
     desc: Block on reachable dependency vulnerabilities (run on dep bumps; weekly via security-audit.yml)
@@ -56,6 +69,7 @@ tasks:
 
   tidy:check:
     desc: Fail if go.mod/go.sum are not tidy
+    deps: [gen-proto]
     cmd: go mod tidy -e -diff
 
   install-tools:

@@ -66,6 +66,17 @@ tasks:
 
   proto:gen:
     desc: Generate code from proto files
+    # Generated code is gitignored, so a fresh checkout/worktree has none. Fingerprint
+    # on the proto inputs: runs when outputs are missing or stale, skips otherwise --
+    # this is what lets the lint/tidy/test guards self-ensure codegen (see the `go:`
+    # and `react:` checks) without regenerating on every commit.
+    sources:
+      - proto/**/*.proto
+      - buf.yaml
+      - buf.gen.yaml
+    generates:
+      - backend/internal/gen/**/*.go
+      - frontend/src/gen/**/*.ts
     cmd: buf generate
 
   proto:lint:
@@ -118,6 +129,7 @@ tasks:
 
   coverage:
     desc: Domain test coverage gate (>= 80%)
+    deps: [proto:gen]
     cmd: sh scripts/check-coverage.sh
 
   build:
