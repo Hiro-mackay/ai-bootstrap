@@ -62,5 +62,21 @@ check "DATABASE_URL uses worktree port" \
   "DATABASE_URL=postgres://postgres:postgres@localhost:5434/app_dev?sslmode=disable" \
   "$(sed -n 's/^\(DATABASE_URL=.*\)/\1/p' "$tmp/b/.env.worktree")"
 
+proj_of() { sed -n 's/^COMPOSE_PROJECT_NAME=//p' "$1/.env.worktree"; }
+
+# same leaf basename in different parents -> distinct, valid project names
+mkdir -p "$tmp/p1" "$tmp/p2"
+git -C "$main" worktree add -q "$tmp/p1/dup" -b dup1
+git -C "$main" worktree add -q "$tmp/p2/dup" -b dup2
+sh "$SCRIPT" alloc "$tmp/p1/dup" >/dev/null
+sh "$SCRIPT" alloc "$tmp/p2/dup" >/dev/null
+p1=$(proj_of "$tmp/p1/dup"); p2=$(proj_of "$tmp/p2/dup")
+check "same-basename worktrees get distinct project names" \
+  "differ" "$([ "$p1" != "$p2" ] && echo differ || echo same)"
+check "project name is non-empty" \
+  "nonempty" "$([ -n "$p1" ] && echo nonempty || echo empty)"
+check "project name starts with alnum" \
+  "yes" "$(printf '%s' "$p1" | grep -q '^[a-z0-9]' && echo yes || echo no)"
+
 [ "$fail" -eq 0 ] && echo "worktree-ports: all tests passed"
 exit "$fail"
