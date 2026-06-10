@@ -22,8 +22,6 @@ import (
 	"github.com/Hiro-mackay/ai-bootstrap/backend/internal/usecase/todo/query"
 	"github.com/Hiro-mackay/ai-bootstrap/backend/pkg/config"
 	"github.com/Hiro-mackay/ai-bootstrap/backend/pkg/logger"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 )
 
 func main() {
@@ -85,9 +83,14 @@ func run() error {
 		},
 	}).Handler(mux)
 
+	protocols := new(http.Protocols)
+	protocols.SetHTTP1(true)
+	protocols.SetUnencryptedHTTP2(true)
+
 	srv := &http.Server{
-		Addr:    ":" + cfg.AppPort,
-		Handler: h2c.NewHandler(corsHandler, &http2.Server{}),
+		Addr:      ":" + cfg.AppPort,
+		Handler:   corsHandler,
+		Protocols: protocols,
 	}
 
 	errCh := make(chan error, 1)
