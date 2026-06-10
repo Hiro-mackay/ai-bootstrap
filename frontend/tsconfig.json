@@ -17,7 +17,7 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
+    "types": ["bun"],
     "paths": {
       "@/*": ["./src/*"]
     }

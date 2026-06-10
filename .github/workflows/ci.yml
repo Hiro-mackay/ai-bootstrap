@@ -87,11 +87,23 @@ jobs:
       - name: Generate proto
         run: buf generate
 
+      - name: Generate routes
+        working-directory: frontend
+        run: |
+          PM="${{ steps.pm.outputs.manager }}"
+          $PM run routes:generate
+
       - name: Lint
         working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
           $PM run lint
+
+      - name: Type Check
+        working-directory: frontend
+        run: |
+          PM="${{ steps.pm.outputs.manager }}"
+          $PM run type-check
 
       - name: Build
         working-directory: frontend
