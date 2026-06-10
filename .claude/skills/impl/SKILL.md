@@ -62,10 +62,15 @@ tests touching the area. Read `docs/constitution.md` and the relevant
 After approval, for each task in order:
 
 1. `TaskCreate` the active task (`in_progress` now, `completed` the moment it lands).
-2. Implement with Edit / Write, mirroring `docs/stacks/*` and existing slices.
-3. Run scoped checks before committing: `task check`, plus `task go:test` (if `backend/` changed) and/or `task react:test` (if `frontend/` changed).
-4. One atomic commit per task: `<type>(<scope>): <imperative>`. Never `--no-verify` / `--force`.
-5. Do NOT push or open a PR -- that is `/ship`.
+2. For a `fix` task, write the failing test **first** and run it to watch it fail (it
+   reproduces the bug); only then implement the fix until it goes green. This leaves a
+   permanent regression guard and makes the change auto-class evidence-complete -- the
+   `auto` route in `task classify` requires a `fix` to ship a test (see
+   `.claude/rules/sdd.md`).
+3. Implement with Edit / Write, mirroring `docs/stacks/*` and existing slices.
+4. Run scoped checks before committing: `task check`, plus `task go:test` (if `backend/` changed) and/or `task react:test` (if `frontend/` changed).
+5. One atomic commit per task: `<type>(<scope>): <imperative>`. Never `--no-verify` / `--force`.
+6. Do NOT push or open a PR -- that is `/ship`.
 
 If a task balloons, re-plan in plan mode: update the tasks, surface the divergence, continue. Never abandon the plan silently.
 
