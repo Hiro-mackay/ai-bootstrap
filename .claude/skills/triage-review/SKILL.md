@@ -19,14 +19,34 @@ allowed-tools:
 # /triage-review
 
 Local, cross-provider review of the current PR -- this is the on-machine
-equivalent of a CI review bot (no CI minutes, no API-key-gated workflow). Get one
-or two independent reviews, synthesize into a single prioritized report, and let
-**the user** decide what to act on. The assistant does not adjudicate which
-findings are correct.
+equivalent of a CI review bot (no CI minutes, no API-key-gated workflow). The change
+is first **classified** (the approve model, #31); only the classes that genuinely need
+judgment get the cross-provider review, and **the user** decides what to act on. The
+assistant does not adjudicate which findings are correct.
 
-## 1. Resolve the PR
+## 1. Resolve and classify the PR
 
 If `$ARGUMENTS` is numeric, use it. Otherwise `gh pr view --json number,title,headRefName,url`.
+
+Run `task classify` (the deterministic approve-model classifier). It prints `CLASS=`,
+which routes the rest of this command:
+
+- **AUTO** -- confined + mechanizable + evidence-complete. The cross-provider review
+  would only re-derive what the deterministic gates already cover, so **skip it**.
+  Confirm every gate is green -- `task check`, the scoped `task go:test` /
+  `task react:test`, and the CI build -- then auto-merge: `gh pr merge --squash` (the
+  repo is squash-only; `gh pr merge --auto` needs branch protection that may be absent,
+  so fall back to a direct squash-merge once checks are green). Annotate the PR
+  (`## /triage-review`, `auto-merged (auto-class)`) and **stop -- you are done**. If any
+  gate is red, treat it as CONFIRM and run the full review below.
+- **CONFIRM** -- a human-held oracle (a domain assumption). Run §2-§6; in §4, lead with
+  the domain assumption the change depends on as the first question to the user.
+- **DECIDE** -- an ADR/governance trigger. Require an ADR under `docs/decisions/`
+  (`.claude/rules/sdd.md`) before merge, then run §2-§6; the human decides.
+
+Never auto-merge anything but a green AUTO. AUTO is non-substantial by construction, so
+the deterministic gates are the sign-off -- consistent with AGENTS.md ("do not let a
+single provider both write and sign off substantial changes").
 
 ## 2. Independent reviews (one message, concurrent)
 
