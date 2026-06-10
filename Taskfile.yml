@@ -1,6 +1,10 @@
 version: '3'
 
-dotenv: ['.env']
+# .env.worktree holds this worktree's isolated ports; .env holds shared,
+# port-independent config. go-task dotenv is first-wins, so .env.worktree is
+# listed first -- its ports beat any stale port keys left in an old-format .env.
+# See .claude/rules/multi-worktree-dev.md.
+dotenv: ['.env.worktree', '.env']
 
 includes:
   go:
@@ -15,9 +19,18 @@ tasks:
     cmd: task --list
 
   setup:
-    desc: Initial project setup (run once after cloning)
+    desc: Prepare this checkout/worktree for development (allocate isolated ports, then full setup; idempotent)
     cmds:
-      - cp -n .env.example .env 2>/dev/null || true
+      # Allocate ports into .env.worktree BEFORE the heavy steps. The next line
+      # re-invokes `task` as a fresh process so it reloads dotenv and the infra /
+      # migrate steps see this worktree's ports -- no re-exec hack, no runtime lock.
+      - sh scripts/worktree-ports.sh ensure .
+      - cmd: task setup:run
+
+  # Not `internal` so `task setup` can re-invoke it as a fresh process (above);
+  # has no `desc`, so it stays out of `task --list`.
+  setup:run:
+    cmds:
       - task: go:install-tools
       - task: hooks
       - task: infra:up
@@ -27,6 +40,23 @@ tasks:
       - task: go:sqlc:generate
       - cmd: bun install --frozen-lockfile
         dir: frontend
+
+  worktree:init:
+    desc: Prepare a freshly created worktree (alias of `task setup`; run once after `gwa`/`git worktree add`)
+    cmds:
+      - task: setup
+
+  worktree:add:
+    desc: 'Create a worktree with isolated ports, for those without a `gwa` alias. Usage: task worktree:add -- <branch> [path]'
+    cmd: sh scripts/worktree-ports.sh add {{.CLI_ARGS}}
+
+  worktree:remove:
+    desc: 'Remove a worktree and free its ports (--force: the generated .env/.env.worktree are untracked). Usage: task worktree:remove -- <path>'
+    cmd: git worktree remove --force {{.CLI_ARGS}}
+
+  worktree:test:
+    desc: Test the worktree port allocation logic
+    cmd: sh scripts/test/worktree-ports.test.sh
 
   hooks:
     desc: Install git pre-commit hooks (lint, type-check, architecture checks)
@@ -44,6 +74,9 @@ tasks:
 
   dev:
     desc: Start infrastructure and all development servers
+    preconditions:
+      - sh: test -f .env.worktree
+        msg: "No .env.worktree -- run `task worktree:init` first to allocate this worktree's isolated dev ports."
     cmds:
       - task: infra:up
       - task: infra:wait
