@@ -3,7 +3,7 @@ module github.com/your-org/your-project/backend
 go 1.25.0
 
 require (
-	connectrpc.com/connect v1.19.1
+	connectrpc.com/connect v1.20.0
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/rs/cors v1.11.1
 	google.golang.org/protobuf v1.36.11
