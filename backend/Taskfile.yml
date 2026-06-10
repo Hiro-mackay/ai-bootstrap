@@ -10,6 +10,10 @@ tasks:
     desc: Build the server binary
     cmd: go build -o bin/server ./cmd/server
 
+  build:check:
+    desc: Compile all packages (clean-build smoke for CI)
+    cmd: go build ./...
+
   test:
     desc: Run tests
     cmd: go test ./... -v -race -count=1
@@ -52,9 +56,7 @@ tasks:
 
   tidy:check:
     desc: Fail if go.mod/go.sum are not tidy
-    cmds:
-      - go mod tidy
-      - git diff --exit-code -- go.mod go.sum
+    cmd: go mod tidy -e -diff
 
   install-tools:
     desc: Install development tools
