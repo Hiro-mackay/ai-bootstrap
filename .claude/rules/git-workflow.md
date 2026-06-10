@@ -11,7 +11,7 @@ gh issue create -t "<title>" -l <type> -l area:<web|api>   # work unit = issue
   → /impl <issue#>     research → plan (human approves) → implement to green
   → /ship              quality gate → push → PR (Closes #)
   → /triage-review      Claude (+ Codex) review → you pick fixes → apply → annotate PR
-  → merge (Rebase and merge)
+  → merge (Squash and merge)
 ```
 
 `/impl` stops only at plan approval; `/ship` and merge are the human "visible to
@@ -26,9 +26,10 @@ label and the branch prefix share one vocabulary.
 
 ## Commits & merge
 
-- One task = one atomic commit (`<type>(<scope>): <imperative>`); each commit leaves the tree working (constitution Article III). Never `--no-verify` / `--force`.
-- **Rebase and merge only.** Squash collapses N atomic commits into one and destroys the "every commit works / one concern per commit" guarantee, dropping `git bisect` / `git blame` resolution to PR granularity. The cost -- cleaning branch history (`git rebase -i` to fold WIP/fixup before merge) -- is work Article III already requires.
-- Configure the repo to disable squash/merge-commit so only rebase is possible.
+- One task = one atomic commit on the branch (`<type>(<scope>): <imperative>`); each commit leaves the tree working (constitution Article III). Never `--no-verify` / `--force`.
+- **Squash and merge only.** A merge collapses the branch's commits into one on `main`, so `git bisect` / `git blame` resolve to PR granularity, not per-commit. Atomicity therefore lives in the **PR** (one PR = one concern), and main's history is one working commit per PR. The branch's atomic commits still earn their keep before merge: they drive review (`/triage-review` reads the diff per concern) and keep `git rebase -i` cleanup cheap.
+- Write a clear squash-commit title (`<type>(<scope>): <imperative>`, closing `#<issue>`); it is the unit `git log` / `bisect` / `blame` see on `main`.
+- The repo is configured for squash only (`allow_merge_commit=false`, `allow_rebase_merge=false`, `allow_squash_merge=true`); `gh pr merge --rebase` will fail. Use `gh pr merge --squash`.
 
 ## main protection
 
