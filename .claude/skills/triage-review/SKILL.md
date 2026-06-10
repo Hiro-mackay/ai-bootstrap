@@ -30,14 +30,21 @@ If `$ARGUMENTS` is numeric, use it. Otherwise `gh pr view --json number,title,he
 
 ## 2. Independent reviews (one message, concurrent)
 
-### Reviewer A -- Claude `/review` (always)
+### Reviewer A -- Claude `/code-review` (always)
+
+`/code-review` is the current-generation diff reviewer (correctness-bug focus tuned
+for diffs, plus reuse/simplification/efficiency, with an effort dial). Run it at
+**high** effort, findings-only. Two hard rules for this subagent: never pass
+`--fix`/`--comment` (the user-selected fixes land in §5, not here), and never use the
+`ultra` level (it is a billed cloud run the model cannot launch).
 
 ```
 Agent({ subagent_type: "general-purpose",
-  description: "Claude /review of PR #<n>",
-  prompt: "Invoke the local /review skill (Skill tool, skill=\"review\") against the PR diff. \
+  description: "Claude /code-review of PR #<n>",
+  prompt: "Invoke the local code-review skill (Skill tool, skill=\"code-review\", args=\"high\") against the current branch diff. \
 Context: <one-paragraph PR brief>. Already-rejected findings (do NOT re-flag): <list>. \
-Return: file:line, severity (blocker/major/minor/nit), recommendation. Do NOT implement fixes." })
+Normalize each finding to: file:line, severity (blocker/major/minor/nit), recommendation. \
+Do NOT pass --fix/--comment, do NOT use the ultra level, do NOT implement fixes." })
 ```
 
 ### Reviewer B -- Codex adversarial review (if the openai-codex plugin is installed)
