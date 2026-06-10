@@ -68,8 +68,9 @@ tasks:
     desc: Generate code from proto files
     # Generated code is gitignored, so a fresh checkout/worktree has none. Fingerprint
     # on the proto inputs: runs when outputs are missing or stale, skips otherwise --
-    # this is what lets the lint/tidy/test guards self-ensure codegen (see the `go:`
-    # and `react:` checks) without regenerating on every commit.
+    # this is what lets the go guards (and coverage) self-ensure their proto code via
+    # `gen-proto` without regenerating on every commit. buf emits the frontend bindings
+    # too, so both output trees are tracked here.
     sources:
       - proto/**/*.proto
       - buf.yaml
