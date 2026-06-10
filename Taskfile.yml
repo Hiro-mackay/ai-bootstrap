@@ -58,6 +58,14 @@ tasks:
     desc: Test the worktree port allocation logic
     cmd: sh scripts/test/worktree-ports.test.sh
 
+  classify:
+    desc: Classify the current branch's diff (auto/confirm/decide) for the approve model (#31)
+    cmd: sh scripts/classify-change.sh {{.CLI_ARGS}}
+
+  classify:test:
+    desc: Test the change classifier decision logic
+    cmd: sh scripts/test/classify-change.test.sh
+
   hooks:
     desc: Install git pre-commit hooks (lint, type-check, architecture checks)
     cmds:
