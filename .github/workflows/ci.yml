@@ -93,6 +93,13 @@ jobs:
           PM="${{ steps.pm.outputs.manager }}"
           $PM run lint
 
+      - name: Type Check
+        working-directory: frontend
+        run: |
+          PM="${{ steps.pm.outputs.manager }}"
+          $PM run routes:generate
+          $PM run type-check
+
       - name: Build
         working-directory: frontend
         run: |
