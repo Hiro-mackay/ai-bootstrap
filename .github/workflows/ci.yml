@@ -1,5 +1,12 @@
 name: CI
 
+# Build-only smoke. The single question CI answers is "does the committed state
+# build from a clean checkout?" -- something local incremental builds can mask.
+# Every correctness guard (lint, vet, tidy, type-check, test, coverage,
+# architecture) is defined once in the Taskfile and enforced locally via lefthook
+# + the /impl,/ship agent loop; periodic supply-chain/security monitoring lives in
+# security-audit.yml. CI does not duplicate those. See docs/harness.md.
+
 on:
   push:
     branches: [main]
@@ -17,8 +24,6 @@ jobs:
     outputs:
       node: ${{ steps.check.outputs.node }}
       go: ${{ steps.check.outputs.go }}
-      python: ${{ steps.check.outputs.python }}
-      rust: ${{ steps.check.outputs.rust }}
     steps:
       - uses: actions/checkout@v6
 
@@ -27,11 +32,9 @@ jobs:
         run: |
           echo "node=$([[ -f frontend/package.json ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "go=$([[ -f backend/go.mod ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "python=$([[ -f requirements.txt || -f pyproject.toml || -f setup.py ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "rust=$([[ -f Cargo.toml ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   node:
-    name: Node.js
+    name: Node.js Build
     needs: detect
     if: needs.detect.outputs.node == 'true'
     runs-on: ubuntu-latest
@@ -87,48 +90,14 @@ jobs:
       - name: Generate proto
         run: buf generate
 
-      - name: Generate routes
-        working-directory: frontend
-        run: |
-          PM="${{ steps.pm.outputs.manager }}"
-          $PM run routes:generate
-
-      - name: Lint
-        working-directory: frontend
-        run: |
-          PM="${{ steps.pm.outputs.manager }}"
-          $PM run lint
-
-      - name: Type Check
-        working-directory: frontend
-        run: |
-          PM="${{ steps.pm.outputs.manager }}"
-          $PM run type-check
-
       - name: Build
         working-directory: frontend
         run: |
           PM="${{ steps.pm.outputs.manager }}"
           $PM run build
 
-      - name: Test
-        working-directory: frontend
-        run: |
-          PM="${{ steps.pm.outputs.manager }}"
-          $PM run test
-
-      - name: Audit
-        working-directory: frontend
-        run: |
-          PM="${{ steps.pm.outputs.manager }}"
-          case "$PM" in
-            bun)  bun pm audit 2>/dev/null || true ;;
-            pnpm) pnpm audit --audit-level=high ;;
-            *)    npm audit --audit-level=high ;;
-          esac
-
   go:
-    name: Go
+    name: Go Build
     needs: detect
     if: needs.detect.outputs.go == 'true'
     runs-on: ubuntu-latest
@@ -138,7 +107,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.25.x" # latest 1.25 patch -> patched stdlib for govulncheck
+          go-version: "1.25.x"
           cache: true
           cache-dependency-path: backend/go.sum
 
@@ -150,103 +119,6 @@ jobs:
       - name: Generate proto
         run: buf generate
 
-      - name: Lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: latest
-          working-directory: backend
-
       - name: Build
         working-directory: backend
         run: go build ./...
-
-      - name: Test
-        working-directory: backend
-        run: go test ./... -race
-
-      - name: Domain coverage gate
-        run: sh scripts/check-coverage.sh
-
-      # Blocks on reachable dependency vulnerabilities (actionable); reports
-      # stdlib advisories without blocking (they track Go releases, not the diff).
-      - name: Vulnerability Check
-        run: sh scripts/govulncheck-gate.sh
-
-  python:
-    name: Python
-    needs: detect
-    if: needs.detect.outputs.python == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version-file: .python-version
-          cache: pip
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
-          if [[ -f pyproject.toml ]]; then pip install .[dev] 2>/dev/null || pip install .; fi
-
-      - name: Lint
-        run: |
-          pip install ruff
-          ruff check .
-
-      - name: Test
-        run: |
-          if command -v pytest &>/dev/null; then
-            pytest
-          elif [[ -d tests ]]; then
-            python -m unittest discover tests
-          fi
-
-      - name: Audit
-        run: |
-          pip install pip-audit 2>/dev/null
-          pip-audit 2>/dev/null || true
-
-  rust:
-    name: Rust
-    needs: detect
-    if: needs.detect.outputs.rust == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
-
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-
-      - name: Lint
-        run: |
-          cargo fmt --check
-          cargo clippy -- -D warnings
-
-      - name: Build
-        run: cargo build
-
-      - name: Test
-        run: cargo test
-
-      - name: Audit
-        run: |
-          cargo install cargo-audit 2>/dev/null || true
-          cargo audit 2>/dev/null || true
-
-  architecture:
-    name: Architecture
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Architecture fitness tests
-        run: sh scripts/check-architecture.sh

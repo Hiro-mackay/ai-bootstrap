@@ -15,8 +15,12 @@ tasks:
     cmd: go test ./... -v -race -count=1
 
   lint:
-    desc: Run linter
+    desc: Run linter (govet + staticcheck deprecation incl.)
     cmd: golangci-lint run
+
+  vuln:
+    desc: Block on reachable dependency vulnerabilities (run on dep bumps; weekly via security-audit.yml)
+    cmd: sh ../scripts/govulncheck-gate.sh
 
   format:
     desc: Format code
@@ -25,13 +29,6 @@ tasks:
   clean:
     desc: Remove build artifacts
     cmd: rm -rf bin/ tmp/
-
-  ci:
-    desc: Run CI pipeline
-    cmds:
-      - task: lint
-      - task: test
-      - task: build
 
   migrate:up:
     desc: Run database migrations up
@@ -52,6 +49,12 @@ tasks:
   tidy:
     desc: Tidy go.mod dependencies
     cmd: go mod tidy
+
+  tidy:check:
+    desc: Fail if go.mod/go.sum are not tidy
+    cmds:
+      - go mod tidy
+      - git diff --exit-code -- go.mod go.sum
 
   install-tools:
     desc: Install development tools

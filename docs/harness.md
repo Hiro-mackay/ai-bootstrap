@@ -36,11 +36,32 @@ sensor is deterministic.
 | `/triage-review` -- Claude `/review` + Codex adversarial-review locally on the PR, you pick the fixes | Inferential, **local** (no CI). The primary review path |
 | `.github/workflows/pr-review.yml` -- the same semantic review in CI | Inferential, optional remote equivalent (auto-on when API keys exist) |
 
-Local enforcement runs via `lefthook`: lint/type/architecture/escape-hatches on
-**pre-commit**; tests + coverage + build on **pre-push** (`task hooks` installs
-it). `ci.yml` mirrors it remotely. Frontend line coverage is deliberately **not**
-gated -- Bun only counts files touched by tests, so a threshold would give false
-confidence; rely on shipped tests + review there.
+#### Where each guard runs -- one definition, one home
+
+The trap is the same check living in three places (lefthook, `ci.yml`, the
+Taskfile) that drift apart. So: **every computational guard is defined exactly
+once, as a Taskfile target. lefthook and CI never inline a raw check command --
+they call `task <name>`.** A guard has one definition and one home; the chance a
+guard is bypassed is a reason to make it reliable, never a reason to copy it as a
+"net" or to water it down.
+
+This repo is a personal, AI-native template, not a multi-team codebase where
+contributors are untrusted. So local is the primary gate and remote is its
+complement, not its duplicate:
+
+| Concern | Home | What runs |
+|---|---|---|
+| Per-change correctness | **lefthook + the `/impl`,`/ship` agent loop** (local) | pre-commit: `proto:lint`, `go:lint` (govet + staticcheck deprecation), `go:tidy:check`, `react:lint`, `react:type-check`, `arch`. pre-push: `go:test`, `coverage`, `react:test` |
+| "Does the committed state build from clean?" | **`ci.yml`** (remote, per-push) | build only -- `go build ./...` + frontend build. The one thing local incremental state can mask. No lint/test/audit here |
+| Supply-chain / security | **`security-audit.yml`** (scheduled + manual) | gitleaks, dependency vuln (govulncheck), CodeQL. Dependency vulns are DB-driven (disclosed independent of your code), so the cadence is weekly, not per-push; run `task go:vuln` on dep bumps for an early signal |
+| Semantic review | `/triage-review` (local) / `pr-review.yml` (optional remote) | inferential, judgment |
+
+Why no remote re-run of lint/test: doing it both locally and remotely on every
+push is wasted compute on a resource-limited runner, and "local can be skipped"
+is not license to weaken the local guard -- `task hooks` installs lefthook and the
+agent loop runs `task check` explicitly. Frontend line coverage is deliberately
+**not** gated -- Bun only counts files touched by tests, so a threshold would give
+false confidence; rely on shipped tests + review there.
 
 ### 3. The loop (adaptive)
 The feedback loop is simply: **a sensor fails loudly -> you fix it.** There is no
@@ -53,8 +74,9 @@ harness grows by intent, not by automation.
 ## Ownership of the SDD architecture gate
 
 The `sdd.md` Architecture Gate (a--p) is split by who enforces it:
-- **Automated** (a, b, i, j, k, n + file size): `scripts/check-architecture.sh`.
-  Build fails on violation; no manual check.
+- **Automated** (a, b, i, j, k, n + file size): `scripts/check-architecture.sh` via
+  `task arch`, enforced locally (pre-commit + the agent loop). A violation blocks the
+  commit; no manual check.
 - **Inferential review** (c, d, e, f, g, h, l, m, o, p): `/triage-review` (local;
   `pr-review.yml` is the optional CI equivalent). These need judgment.
 
@@ -64,7 +86,8 @@ The gate list lives once in `sdd.md`; the sensor and the review prompt reference
 AI weights in-repo code over docs, so a too-empty repo produces high-variance
 first generations. The anchor is `docs/stacks/` (canonical patterns) plus the
 nearest existing slice: `/impl` mirrors them instead of improvising structure, and
-`scripts/check-architecture.sh` fails the build when it drifts.
+`scripts/check-architecture.sh` (via `task arch`, on pre-commit) blocks the commit
+when it drifts.
 
 ## Not built (deliberately)
 - **Output-quality eval** -- no golden-task regression set yet. Add it when there

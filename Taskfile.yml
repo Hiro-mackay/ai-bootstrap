@@ -101,20 +101,14 @@ tasks:
       - task: arch
 
   check:
-    desc: Run all checks (proto lint, format, lint, type-check, build)
+    desc: Run all static guards (proto lint, lint, tidy, type-check, architecture)
     cmds:
       - task: proto:lint
       - task: go:lint
+      - task: go:tidy:check
       - task: react:lint
       - task: react:type-check
       - task: arch
-      - task: go:build
-
-  ci:
-    desc: Run full CI pipeline
-    cmds:
-      - task: go:ci
-      - task: react:ci
 
   infra:up:
     desc: Start infrastructure services (PostgreSQL)
