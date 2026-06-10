@@ -72,6 +72,16 @@ jobs:
         with:
           go-version-file: backend/go.mod
 
+      - name: Setup buf
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate proto
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
+        run: buf generate
+
       - name: Go vulnerability check
         if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
         run: sh scripts/govulncheck-gate.sh
