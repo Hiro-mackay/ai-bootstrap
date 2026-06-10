@@ -1,8 +1,10 @@
 version: '3'
 
-# .env holds shared, port-independent config; .env.worktree holds this worktree's
-# isolated ports (later file wins). See .claude/rules/multi-worktree-dev.md.
-dotenv: ['.env', '.env.worktree']
+# .env.worktree holds this worktree's isolated ports; .env holds shared,
+# port-independent config. go-task dotenv is first-wins, so .env.worktree is
+# listed first -- its ports beat any stale port keys left in an old-format .env.
+# See .claude/rules/multi-worktree-dev.md.
+dotenv: ['.env.worktree', '.env']
 
 includes:
   go:

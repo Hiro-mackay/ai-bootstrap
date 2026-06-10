@@ -38,7 +38,15 @@ return to the pool automatically -- there is nothing to prune.
   **only** in `.env.worktree`, and `dotenv: ['.env', '.env.worktree']` lets the latter win.
 
 The set of taken offsets is the live worktrees themselves, so there is **no registry
-file, no lock, no GC**. A removed worktree frees its offset by ceasing to exist.
+file and no GC** -- a removed worktree frees its offset by ceasing to exist. The only
+lock is a short `mkdir` lock in the git-common-dir held during a linked worktree's
+scan-and-write, so two simultaneous `worktree:init` runs cannot pick the same offset;
+it is not held during `task dev`.
+
+**Upgrading an existing project?** Regenerate `.env` from `.env.example` (the new
+`.env.example` carries no port keys). A stale `.env` left over from before this change
+still has `POSTGRES_PORT`/`DATABASE_URL`/etc.; `.env.worktree` is listed first in
+`dotenv` so it wins for `task dev`, but clearing the stale keys keeps `.env` honest.
 
 ## Why no runtime allocation / re-exec
 
