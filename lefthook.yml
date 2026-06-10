@@ -28,37 +28,28 @@ pre-commit:
           echo "$large"
           exit 1
         fi
-    frontend-lint:
-      root: frontend
-      run: bun run lint
-    frontend-typecheck:
-      root: frontend
-      run: bun run type-check
-    frontend-format:
-      root: frontend
-      run: bun run format
-    go-vet:
-      root: backend
-      run: go vet ./...
+    # Guards delegate to Taskfile targets (the single definition); see docs/harness.md.
+    proto-lint:
+      run: task proto:lint
     go-lint:
-      root: backend
-      run: golangci-lint run --timeout 5m
+      run: task go:lint
+    go-tidy:
+      run: task go:tidy:check
+    frontend-lint:
+      run: task react:lint
+    frontend-typecheck:
+      run: task react:type-check
+    frontend-format:
+      run: task react:format
+      stage_fixed: true
     architecture:
-      run: sh scripts/check-architecture.sh
+      run: task arch
 
 pre-push:
   commands:
     go-test:
-      root: backend
-      run: go test ./... -race
+      run: task go:test
     coverage:
-      run: sh scripts/check-coverage.sh
+      run: task coverage
     frontend-test:
-      root: frontend
-      run: bun test
-    frontend-build:
-      root: frontend
-      run: bun run build
-    go-build:
-      root: backend
-      run: go build ./...
+      run: task react:test

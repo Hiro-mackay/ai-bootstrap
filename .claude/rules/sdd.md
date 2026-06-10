@@ -56,7 +56,7 @@ Before verification, check all new/modified files against `docs/stacks/*`:
    p. Page components use `useSuspenseQuery` (not `useQuery`) for primary data, wrapped in `<Suspense>`
 
    **Enforcement / ownership** (do not self-report what tooling already owns):
-   - **Automated** -- gates a, b, i, j, k, n + file size + escape hatches are enforced by `task arch` (`scripts/check-architecture.sh`) and domain coverage by `task coverage`. A violation fails the build.
+   - **Automated** -- gates a, b, i, j, k, n + file size + escape hatches are enforced by `task arch` (`scripts/check-architecture.sh`) and domain coverage by `task coverage`, run locally on pre-commit/pre-push and in the `/impl`,`/ship` loop. A violation blocks the commit/push (CI itself is build-only -- see `docs/harness.md`).
    - **Review** -- the semantic gates c, d, e, f, g, h, l, m, o, p are judged by `/triage-review` (Claude + Codex). Self-check them in plan mode too.
 
    Any violation -> create a fix task -> loop back to implementation.

@@ -34,10 +34,6 @@ jobs:
             file: frontend/package.json
           - name: go
             file: backend/go.mod
-          - name: python
-            file: requirements.txt
-          - name: rust
-            file: Cargo.toml
     steps:
       - uses: actions/checkout@v6
 
@@ -76,24 +72,19 @@ jobs:
         with:
           go-version-file: backend/go.mod
 
+      - name: Setup buf
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate proto
+        if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
+        run: buf generate
+
       - name: Go vulnerability check
         if: steps.check.outputs.exists == 'true' && matrix.name == 'go'
-        working-directory: backend
-        run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./...
-
-      - name: Python safety check
-        if: steps.check.outputs.exists == 'true' && matrix.name == 'python'
-        run: |
-          pip install pip-audit
-          pip-audit -r requirements.txt
-
-      - name: Rust audit
-        if: steps.check.outputs.exists == 'true' && matrix.name == 'rust'
-        run: |
-          cargo install cargo-audit
-          cargo audit
+        run: sh scripts/govulncheck-gate.sh
 
   codeql:
     name: CodeQL Analysis
@@ -109,10 +100,6 @@ jobs:
           if [[ -f backend/go.mod ]]; then
             [[ -n "$LANGS" ]] && LANGS="$LANGS,"
             LANGS="${LANGS}go"
-          fi
-          if [[ -f requirements.txt || -f pyproject.toml ]]; then
-            [[ -n "$LANGS" ]] && LANGS="$LANGS,"
-            LANGS="${LANGS}python"
           fi
           if [[ -z "$LANGS" ]]; then LANGS="javascript-typescript"; fi
           echo "languages=$LANGS" >> "$GITHUB_OUTPUT"

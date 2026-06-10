@@ -48,11 +48,3 @@ tasks:
   clean:
     desc: Remove build artifacts
     cmd: rm -rf dist/
-
-  ci:
-    desc: Run CI pipeline
-    cmds:
-      - task: lint
-      - task: type-check
-      - task: test
-      - task: build

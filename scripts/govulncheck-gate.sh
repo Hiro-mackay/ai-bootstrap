@@ -7,13 +7,26 @@
 # Requires go + jq. Run from anywhere.
 set -u
 
-ROOT=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
-cd "$ROOT/backend" || exit 0
+command -v go >/dev/null 2>&1 || { echo "govulncheck-gate: go not found" >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "govulncheck-gate: jq not found" >&2; exit 1; }
 
-go install golang.org/x/vuln/cmd/govulncheck@latest
+ROOT=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
+cd "$ROOT/backend" || { echo "govulncheck-gate: backend/ not found" >&2; exit 1; }
+
+go install golang.org/x/vuln/cmd/govulncheck@latest ||
+  { echo "govulncheck-gate: failed to install govulncheck" >&2; exit 1; }
 
 out=$(mktemp)
-govulncheck -json ./... >"$out" 2>/dev/null || true
+err=$(mktemp)
+# -json exits 0 even when vulnerabilities are found, so a non-zero exit is a real
+# tooling/package-load error -- fail loudly rather than report a false green.
+if ! govulncheck -json ./... >"$out" 2>"$err"; then
+  echo "govulncheck-gate: scan failed (not a vulnerability result):" >&2
+  cat "$err" >&2
+  rm -f "$out" "$err"
+  exit 1
+fi
+rm -f "$err"
 
 # Trace[0] is the vulnerable symbol; its module is "stdlib" for standard-library
 # vulnerabilities and the dependency module path otherwise.

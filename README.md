@@ -13,7 +13,7 @@ integration (Claude Code + Codex) out of the box.
   Agent Roles section in `AGENTS.md`.
 - **Enforcement split**: deterministic architecture gates (layering, barrels,
   cross-feature imports, domain tags, manual queryKey, store state, file size) are
-  enforced by `scripts/check-architecture.sh` (`task arch`, lefthook, CI). The
+  enforced by `scripts/check-architecture.sh` (`task arch`, lefthook). The
   semantic gates that need judgment are reviewed by `/triage-review`.
 - **Review**: `/triage-review` runs Claude + Codex on the PR **locally** (no CI) and
   you pick the fixes -- the primary path. `.github/workflows/pr-review.yml` is the
@@ -116,8 +116,7 @@ See [`.claude/rules/git-workflow.md`](.claude/rules/git-workflow.md).
 | `task dev` | Start all development servers (Go + React) |
 | `task test` | Run all tests |
 | `task lint` | Run all linters |
-| `task check` | Full check (proto lint, format, lint, type-check, build) |
-| `task ci` | Full CI pipeline |
+| `task check` | Static guards (proto lint, lint, tidy, type-check, architecture) |
 | `task proto:gen` | Generate code from proto files |
 | `task proto:lint` | Lint proto files |
 | `task logs:db` | Follow PostgreSQL logs |

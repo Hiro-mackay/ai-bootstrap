@@ -14,9 +14,9 @@ permissions:
 # delete it if you review locally only.
 #
 # Cross-provider review of the SEMANTIC architecture gates that automated checks
-# cannot verify. The deterministic gates are already enforced by
-# scripts/check-architecture.sh (the `architecture` job in ci.yml); this review
-# owns the judgment-based gates in .claude/rules/sdd.md.
+# cannot verify. The deterministic gates are enforced locally by
+# scripts/check-architecture.sh (`task arch` on lefthook + the agent loop); this
+# review owns the judgment-based gates in .claude/rules/sdd.md.
 #
 # Auto-on: each provider's review runs as soon as its API key secret exists --
 # ANTHROPIC_API_KEY (Claude) and/or OPENAI_API_KEY (Codex). No key -> that
@@ -57,8 +57,9 @@ jobs:
             automated checks cannot verify. The deterministic gates (layer
             dependencies, domain serialization tags, barrels, cross-feature
             imports, manual queryKey, server state in stores, file size) are
-            ALREADY enforced by scripts/check-architecture.sh -- do NOT report
-            those.
+            enforced locally by scripts/check-architecture.sh (`task arch`);
+            focus on the semantic gates below and flag a deterministic violation
+            only if local enforcement clearly missed it.
 
             Read .claude/rules/sdd.md (Architecture Gate) and
             docs/constitution.md, then review ONLY the changed files for these
@@ -97,8 +98,9 @@ jobs:
             Cross-provider review of the SEMANTIC architecture gates only. The
             deterministic gates (layering, domain tags, barrels, cross-feature
             imports, manual queryKey, server state in stores, file size) are
-            already enforced by scripts/check-architecture.sh -- do NOT report
-            those.
+            enforced locally by scripts/check-architecture.sh (`task arch`);
+            focus on the semantic gates and flag a deterministic violation only
+            if local enforcement clearly missed it.
 
             Read .claude/rules/sdd.md (Architecture Gate) and
             docs/constitution.md, then review the changed files for the
