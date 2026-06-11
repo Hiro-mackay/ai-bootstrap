@@ -45,6 +45,11 @@ files by path, symbols by name, existing patterns/slices the change must mirror,
 tests touching the area. Read `docs/constitution.md` and the relevant
 `docs/stacks/*.md`; confirm domain boundaries against `docs/prd.md`.
 
+Run `task context -- --path <a file you will touch>` (or `task context` once a branch diff
+exists): if it surfaces a bounded-context record (`@business`/`@invariant` + the `docs/prd.md`
+block), treat it as **binding context** for the spec and plan -- respect the invariants, and flag
+in plan mode if the change contradicts one (#34).
+
 ## 4. Plan mode
 
 `EnterPlanMode`. Inside:
