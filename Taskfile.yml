@@ -58,6 +58,10 @@ tasks:
     desc: Test the worktree port allocation logic
     cmd: sh scripts/test/worktree-ports.test.sh
 
+  context:test:
+    desc: Test the context-harness gate (completeness + binding)
+    cmd: sh scripts/test/check-context.test.sh
+
   hooks:
     desc: Install git pre-commit hooks (lint, type-check, architecture checks)
     cmds:
@@ -125,8 +129,10 @@ tasks:
       - task: react:lint
 
   arch:
-    desc: Architecture fitness tests (layering, barrels, cross-feature, file size, escape hatches)
-    cmd: sh scripts/check-architecture.sh
+    desc: Architecture fitness tests (layering, barrels, cross-feature, file size, escape hatches, context annotations)
+    cmds:
+      - sh scripts/check-architecture.sh
+      - sh scripts/check-context.sh
 
   coverage:
     desc: Domain test coverage gate (>= 80%)
