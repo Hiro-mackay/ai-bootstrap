@@ -58,9 +58,15 @@ tasks:
     desc: Test the worktree port allocation logic
     cmd: sh scripts/test/worktree-ports.test.sh
 
+  context:
+    desc: 'Surface the touched files'' context annotations + matching prd.md block (#34). Usage: task context [-- <base>|--path <p>]'
+    cmd: sh scripts/context.sh {{.CLI_ARGS}}
+
   context:test:
-    desc: Test the context-harness gate (completeness + binding)
-    cmd: sh scripts/test/check-context.test.sh
+    desc: Test the context-harness gate and surface
+    cmds:
+      - sh scripts/test/check-context.test.sh
+      - sh scripts/test/context.test.sh
 
   hooks:
     desc: Install git pre-commit hooks (lint, type-check, architecture checks)
