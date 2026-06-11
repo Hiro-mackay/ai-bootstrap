@@ -50,7 +50,11 @@ Fill `docs/architecture.md`:
 
 Summarize before writing.
 
-## Step 5: PRD (domain) -- optional
+## Step 5: Domain Definitions (`docs/prd.md`) -- optional
+
+This is the **domain definitions** doc (bounded contexts, ubiquitous language, invariants) --
+**not** a requirements catalogue; requirements/goals stay a human judgment at change-time (#34).
+The bounded-context names recorded here are what code `@context` annotations bind to (`task context`).
 
 `docs/prd.md`; the `ddd-principles` rule is auto-loaded. Interview: domain overview,
 core vs supporting subdomains, ubiquitous language, bounded contexts, aggregates

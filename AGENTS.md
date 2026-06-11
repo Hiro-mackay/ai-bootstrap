@@ -14,7 +14,7 @@ Shared instructions for all AI agents (Claude Code, Codex, etc.). `CLAUDE.md` im
 
 - [Constitution](docs/constitution.md) -- project rules and principles
 - [Architecture](docs/architecture.md) -- single source of truth for system design
-- [Product Requirements](docs/prd.md) -- domain boundaries and product scope
+- [Domain Definitions](docs/prd.md) -- bounded contexts, ubiquitous language, invariants (definitions, not requirements; see #34)
 - [Stack Reference](docs/stacks/) -- tech-stack-specific implementation patterns (populated during /setup)
 - [Harness Engineering](docs/harness.md) -- how this repo steers AI agents (guides, sensors, the feedback loop)
 
