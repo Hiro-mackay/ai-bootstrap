@@ -72,5 +72,17 @@ git reset -q --hard base; git clean -qfd
 check "--path surfaces annotations" "@business Lets a user store" \
   "$(sh "$SCRIPT" --path backend/internal/domain/entity/file.go 2>/dev/null)"
 
+# --- a non-carrier file with annotation tokens is NOT surfaced (F3) ---
+mkdir -p scripts/test
+cat > scripts/test/fixture.test.sh <<'EOF'
+# @context Storage
+# @business fixture string, not real product context
+EOF
+git add -A; git commit -qm c
+check "fixture file not surfaced" "!annotated" "$(sh "$SCRIPT" base 2>/dev/null)"
+check "--path on fixture not surfaced" "!annotated" \
+  "$(sh "$SCRIPT" --path scripts/test/fixture.test.sh 2>/dev/null)"
+git reset -q --hard base; git clean -qfd
+
 [ "$fail" -eq 0 ] && echo "context: all tests passed"
 exit "$fail"

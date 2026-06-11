@@ -17,6 +17,16 @@ fi
 ann='@\(context\|business\|invariant\)[[:space:]]'
 strip='s#^[[:space:]]*\(//\|\*\|/\*\*\?\)[[:space:]]*##'
 
+# Only the documented annotation carriers are surfaced, so fixtures/docs/examples that merely
+# mention the tags (e.g. scripts/test/*.test.sh) are never injected as real product context.
+is_carrier() {
+  case "$1" in
+    backend/internal/domain/*.go|backend/internal/usecase/*.go) return 0 ;;
+    frontend/src/features/*.ts|frontend/src/features/*.tsx) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 printf 'context surface (#34)\n'
 
 any=0
@@ -26,6 +36,7 @@ IFS='
 '
 for f in $files; do
   [ -n "$f" ] || continue
+  is_carrier "$f" || continue
   [ -f "$f" ] || continue
   if grep -q "$ann" "$f" 2>/dev/null; then
     printf '\n--- %s ---\n' "$f"
