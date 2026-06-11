@@ -66,6 +66,12 @@ is recommended, not blocking.
 Populate the AGENTS.md `## Domain Context` section: domain name, core bounded
 contexts, one-line key invariant. If PRD was skipped, ask for a brief summary.
 
+If a bounded context was named in Step 5, scaffold the context-harness annotation (#34) into the
+seed: add `@context <Name>`/`@business`/`@invariant` to the first domain entity, and `@context`/
+`@business` JSDoc to the seed feature's page (see `docs/stacks/`). The `check-context.sh` gate then
+activates for that context; with no context defined it stays vacuous, so this is optional and
+never blocks. Point the team at `docs/context-harness.md` for the growth path.
+
 ## Step 7: Constitution review -- optional
 
 Show `docs/constitution.md`; ask whether the principles fit and offer to adjust or

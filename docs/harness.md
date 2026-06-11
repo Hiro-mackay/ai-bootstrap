@@ -33,6 +33,7 @@ sensor is deterministic.
 | Escape-hatch bans -- `any` (biome `noExplicitAny: error`), TODO/FIXME + lint-suppression (`godox`/`nolintlint` for Go, `check-architecture.sh` for TS) | Computational. Closes the "quiet workaround" loopholes |
 | `scripts/check-architecture.sh` -- layering, no-barrel, no cross-feature imports, file size, no domain serialization tags, no manual queryKey, no server state in stores, no escape hatches | Computational, architecture-specific. The one custom sensor |
 | `scripts/check-coverage.sh` -- domain test coverage >= 80% (skips until domain logic exists) | Computational. Domain only; usecase/infra covered by shipped tests + review |
+| `scripts/check-context.sh` -- context annotations: anchors carry `@context`/`@business`, every `@context` binds to `docs/prd.md` (the context-harness kernel, #34) | Computational. Vacuous until a context + domain code exist. Surface: `task context`. Grow via `docs/context-harness.md` |
 | `/triage-review` -- Claude `/review` + Codex adversarial-review locally on the PR, you pick the fixes | Inferential, **local** (no CI). The primary review path |
 | `.github/workflows/pr-review.yml` -- the same semantic review in CI | Inferential, optional remote equivalent (auto-on when API keys exist) |
 
