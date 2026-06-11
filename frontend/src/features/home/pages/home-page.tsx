@@ -1,3 +1,9 @@
+/**
+ * @business The landing page a user sees first -- orients them to where things live.
+ *
+ * Worked example of the context-harness annotation (#34). Add `@context <Name>` once a
+ * bounded context for this feature is defined in `docs/prd.md`; `task context` surfaces this.
+ */
 export function HomePage() {
   return (
     <div>
