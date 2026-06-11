@@ -1,0 +1,113 @@
+#!/bin/sh
+# Tests for scripts/check-context.sh -- the context-harness gate (#34).
+# Completeness: Go domain/usecase anchors must carry @context + @business.
+# Binding: every code @context must match a context defined in docs/prd.md.
+# Vacuous: a placeholder-only prd with no domain code passes (start-anytime).
+set -u
+
+SCRIPT=$(CDPATH= cd "$(dirname "$0")/.." && pwd)/check-context.sh
+
+fail=0
+check() { # check <label> <expected exit: pass|fail> <actual exit code>
+  _want=0
+  [ "$2" = "fail" ] && _want=1
+  if { [ "$2" = "pass" ] && [ "$3" -eq 0 ]; } || { [ "$2" = "fail" ] && [ "$3" -ne 0 ]; }; then
+    echo "ok   - $1"
+  else
+    echo "FAIL - $1: expected $2 (exit $_want) got exit $3" >&2
+    fail=1
+  fi
+}
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# scaffold a minimal repo tree; $1 = bounded-context heading line for prd.md
+scaffold() { # scaffold <context-heading>
+  rm -rf "$tmp"/*
+  mkdir -p "$tmp/docs" "$tmp/backend/internal/domain/entity" \
+           "$tmp/backend/internal/usecase/storage/command"
+  cat > "$tmp/docs/prd.md" <<EOF
+# Domain Definitions
+
+## Bounded Contexts
+
+$1
+
+## Context Map
+EOF
+}
+
+run() { ( cd "$tmp" && sh "$SCRIPT" >/dev/null 2>&1; echo $? ); }
+
+# --- vacuous: placeholder context, no domain code -> pass ---
+scaffold '### {{CONTEXT_NAME}}'
+check "placeholder prd + no code -> pass" pass "$(run)"
+
+# --- defined context + fully annotated entity -> pass ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+
+// @context Storage
+// @business Lets a user store and retrieve files.
+type File struct{ ID string }
+EOF
+check "annotated entity, context defined -> pass" pass "$(run)"
+
+# --- entity missing annotations -> fail (completeness) ---
+scaffold '### Storage'
+printf 'package entity\n\ntype File struct{ ID string }\n' \
+  > "$tmp/backend/internal/domain/entity/file.go"
+check "unannotated entity -> fail (completeness)" fail "$(run)"
+
+# --- @context not defined in prd -> fail (binding) ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+
+// @context Billing
+// @business Charges the customer.
+type File struct{ ID string }
+EOF
+check "undefined @context -> fail (binding)" fail "$(run)"
+
+# --- usecase command anchor is checked too ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/usecase/storage/command/create_file.go" <<'EOF'
+package command
+
+type CreateFileCommand struct{}
+EOF
+check "unannotated usecase command -> fail (completeness)" fail "$(run)"
+
+# --- _test.go is not an anchor ---
+scaffold '### Storage'
+printf 'package entity\n\ntype File struct{ ID string }\n' \
+  > "$tmp/backend/internal/domain/entity/file_test.go"
+check "_test.go is exempt -> pass" pass "$(run)"
+
+# --- multi-word context name binds correctly (F1) ---
+scaffold '### File Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+
+// @context File Storage
+// @business Stores files.
+type File struct{ ID string }
+EOF
+check "multi-word @context, defined -> pass" pass "$(run)"
+
+# --- @context with an extra token beyond a defined prefix must NOT pass (F1 drift) ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+
+// @context Storage Archive
+// @business Archives files.
+type File struct{ ID string }
+EOF
+check "@context 'Storage Archive' vs '### Storage' -> fail (no prefix match)" fail "$(run)"
+
+[ "$fail" -eq 0 ] && echo "check-context: all tests passed"
+exit "$fail"

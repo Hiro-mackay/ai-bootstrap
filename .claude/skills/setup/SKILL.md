@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Personalize this template for a new project -- identity, architecture/PRD docs, domain context
+description: Personalize this template for a new project -- identity, architecture/domain-definitions docs, domain context
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
@@ -50,17 +50,27 @@ Fill `docs/architecture.md`:
 
 Summarize before writing.
 
-## Step 5: PRD (domain) -- optional
+## Step 5: Domain Definitions (`docs/prd.md`) -- optional
+
+This is the **domain definitions** doc (bounded contexts, ubiquitous language, invariants) --
+**not** a requirements catalogue; requirements/goals stay a human judgment at change-time (#34).
+The bounded-context names recorded here are what code `@context` annotations bind to (`task context`).
 
 `docs/prd.md`; the `ddd-principles` rule is auto-loaded. Interview: domain overview,
 core vs supporting subdomains, ubiquitous language, bounded contexts, aggregates
-(root/entities/VOs/invariants), domain events, context map. Skipping is fine -- PRD
-is recommended, not blocking.
+(root/entities/VOs/invariants), domain events, context map. Skipping is fine -- the
+definitions doc is recommended, not blocking.
 
 ## Step 6: Domain Context in AGENTS.md
 
 Populate the AGENTS.md `## Domain Context` section: domain name, core bounded
-contexts, one-line key invariant. If PRD was skipped, ask for a brief summary.
+contexts, one-line key invariant. If the definitions doc was skipped, ask for a brief summary.
+
+If a bounded context was named in Step 5, scaffold the context-harness annotation (#34) into the
+seed: add `@context <Name>`/`@business`/`@invariant` to the first domain entity, and `@context`/
+`@business` JSDoc to the seed feature's page (see `docs/stacks/`). The `check-context.sh` gate then
+activates for that context; with no context defined it stays vacuous, so this is optional and
+never blocks. Point the team at `docs/context-harness.md` for the growth path.
 
 ## Step 7: Constitution review -- optional
 

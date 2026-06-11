@@ -16,7 +16,7 @@ The `/impl <issue#>` command runs this workflow end to end; `/ship` and
 ## Workflow (inside plan mode, steps 1-5)
 
 1. **Research** -- Explore subagents investigate the codebase before writing anything: existing patterns, affected files, dependencies, tests touching the area.
-2. **Constitution & PRD** -- Read `docs/constitution.md` and `docs/prd.md`; confirm alignment with principles and domain boundaries.
+2. **Constitution & domain definitions** -- Read `docs/constitution.md` and `docs/prd.md`; confirm alignment with principles and domain boundaries.
 3. **Spec (in plan mode, not a file)** -- Define problem, user stories, acceptance criteria (Given/When/Then) from the issue. Use AskUserQuestion for genuine ambiguity. Scope to a single bounded context. **No spec files** -- acceptance criteria become test descriptions.
 4. **Plan (in plan mode, not a file)** -- Architecture decisions, component breakdown, affected files, risks. Read `docs/stacks/*` and verify layer compliance; mirror the canonical patterns and the nearest existing slice rather than inventing structure. Create an ADR in `docs/decisions/` only when a §-criteria below applies. The plan is implementation guidance, not an artifact to preserve.
 5. **Tasks** -- Decompose into dependency-ordered tasks (domain first, presentation last; one concern each). Track with `TaskCreate`. Exit plan mode for human approval.

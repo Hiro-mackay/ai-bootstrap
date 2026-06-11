@@ -82,6 +82,23 @@ Every feature MUST have:
 
 Optional: `components/`, `hooks/`, `validation.ts`, `types.ts`, `error-messages.ts`, `__tests__/`
 
+### Context annotation
+
+The feature's primary page export carries its product context in a JSDoc comment, surfaced by
+`task context` when the feature is touched (#34). It mirrors the Go tags in `go-ddd.md`:
+
+```tsx
+/**
+ * @context Storage
+ * @business Lets a user browse and manage their uploaded files.
+ */
+export function FilesPage() { /* ... */ }
+```
+
+`@context <Name>` should match a bounded context in `docs/prd.md`; `@business` is the one-line why.
+The kernel does not gate frontend annotations (it gates the Go domain anchors); keep this as the
+convention `/impl` mirrors.
+
 ## Data Layer
 
 ### Connect Transport
