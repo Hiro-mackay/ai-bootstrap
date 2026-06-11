@@ -31,9 +31,11 @@ for f in $files; do
     printf '\n--- %s ---\n' "$f"
     grep "$ann" "$f" | sed "$strip"
     any=1
-    for v in $(grep -oE '@context[[:space:]]+[A-Za-z][A-Za-z0-9_]*' "$f" | sed 's/@context[[:space:]]*//'); do
-      case " $contexts " in *" $v "*) ;; *) contexts="$contexts $v" ;; esac
-    done
+    # full @context value (may contain spaces/hyphens), trimmed, one per line
+    cvals=$(grep '@context[[:space:]]' "$f" \
+      | sed -n 's/^.*@context[[:space:]][[:space:]]*//p' | sed 's/[[:space:]][[:space:]]*$//')
+    contexts="$contexts
+$cvals"
   fi
 done
 IFS=$oldifs
@@ -43,7 +45,11 @@ if [ "$any" -eq 0 ]; then
   exit 0
 fi
 
+contexts=$(printf '%s\n' "$contexts" | sed '/^$/d' | sort -u)
+IFS='
+'
 for c in $contexts; do
+  [ -n "$c" ] || continue
   block=$(awk -v c="$c" '
     $0 ~ "^### "c"$" {f=1; print; next}
     f && /^(### |## )/ {f=0}
@@ -53,4 +59,5 @@ for c in $contexts; do
     printf '\n=== docs/prd.md -- %s ===\n%s\n' "$c" "$block"
   fi
 done
+IFS=$oldifs
 exit 0

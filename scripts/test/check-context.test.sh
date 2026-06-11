@@ -87,5 +87,27 @@ printf 'package entity\n\ntype File struct{ ID string }\n' \
   > "$tmp/backend/internal/domain/entity/file_test.go"
 check "_test.go is exempt -> pass" pass "$(run)"
 
+# --- multi-word context name binds correctly (F1) ---
+scaffold '### File Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+
+// @context File Storage
+// @business Stores files.
+type File struct{ ID string }
+EOF
+check "multi-word @context, defined -> pass" pass "$(run)"
+
+# --- @context with an extra token beyond a defined prefix must NOT pass (F1 drift) ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+
+// @context Storage Archive
+// @business Archives files.
+type File struct{ ID string }
+EOF
+check "@context 'Storage Archive' vs '### Storage' -> fail (no prefix match)" fail "$(run)"
+
 [ "$fail" -eq 0 ] && echo "check-context: all tests passed"
 exit "$fail"

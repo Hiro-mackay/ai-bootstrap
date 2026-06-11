@@ -46,8 +46,10 @@ IFS=$oldifs
 report "anchors missing @context/@business (aggregate-root entity / usecase command|query)" "$missing"
 
 # --- binding: every code @context value must be a defined context ---
-used=$(grep -rhoE '@context[[:space:]]+[A-Za-z][A-Za-z0-9_]*' backend --include='*.go' 2>/dev/null \
-  | sed 's/@context[[:space:]]*//' | sort -u || true)
+# Capture the FULL value after @context (a context name may have spaces/hyphens), trimmed.
+used=$(grep -rh '@context[[:space:]]' backend --include='*.go' 2>/dev/null \
+  | sed -n 's/^.*@context[[:space:]][[:space:]]*//p' | sed 's/[[:space:]][[:space:]]*$//' \
+  | sed '/^$/d' | sort -u || true)
 unbound=""
 IFS='
 '
