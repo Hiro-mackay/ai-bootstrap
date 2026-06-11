@@ -1,5 +1,5 @@
 #!/bin/sh
-# Context surface (#34, ADR-001). For a change, prints the in-code context annotations of the
+# Context surface (#34; see docs/context-harness.md). For a change, prints the in-code context annotations of the
 # touched files PLUS the matching bounded-context block from docs/prd.md -- the product context a
 # human or agent needs at change-time. Deterministic adjacency, no retrieval. Always exits 0.
 # POSIX sh, zero deps.

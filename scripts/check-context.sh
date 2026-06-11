@@ -1,5 +1,5 @@
 #!/bin/sh
-# Context-harness gate (#34, ADR-001). Enforces the in-code context annotations against the
+# Context-harness gate (#34; see docs/context-harness.md). Enforces the in-code context annotations against the
 # domain definitions in docs/prd.md. The anti-rot mechanism: annotations are declaration-local
 # (move with the code) AND a missing/stale one fails the commit.
 #   completeness -- each Go domain/usecase ANCHOR carries @context + @business

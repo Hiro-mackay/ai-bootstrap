@@ -4,7 +4,7 @@ The technical-semantic harness (lint, type-check, `check-architecture.sh`) keeps
 The **context harness** keeps the product *why* — what a capability is, its domain invariants —
 available and trustworthy when code is edited, by an engineer or an agent. This template ships the
 **kernel**; grow toward the full shape (the airCloset *cortex* architecture) only when a trigger
-fires. See `docs/decisions/001-context-harness-kernel.md` and #34.
+fires. Background, the rejected alternatives, and the journey that shaped this live in #34.
 
 ## What the kernel is (shipped)
 
@@ -20,6 +20,24 @@ fires. See `docs/decisions/001-context-harness-kernel.md` and #34.
 
 Coverage grows with the project: an empty clone with no defined contexts and no domain code passes
 vacuously, so development can start immediately. The gate bites only where a real context exists.
+
+### Why this shape
+
+- **Annotations on the declaration, not a separate doc.** They move with the code under refactor and
+  are enforced, so they cannot silently drift. A scattered per-feature `why.md` (an earlier rejected
+  spike) had neither property.
+- **Not a banned spec file** (`.claude/rules/sdd.md` forbids per-feature spec/plan docs because they
+  rot). The annotations describe *intent*, not implementation; `docs/prd.md` holds *definitions*,
+  scoped to the bounded context, not a per-PR requirements catalogue.
+- **Requirements are not managed here.** Spec correctness is a human judgment at change-time
+  (`/triage-review`); the harness carries definitions + code meaning, not product requirements.
+
+### Known limitations (kernel)
+
+- **Completeness is file-level, not declaration-level.** A Go anchor file passes if `@context` +
+  `@business` appear *anywhere* in it, so an unannotated aggregate root alongside an annotated
+  secondary declaration is not caught. Declaration-level checking is the stage-2 AST upgrade.
+- The kernel **surfaces** an `@invariant` but does not verify the code obeys it (also stage-2+).
 
 ## The ladder (delegated — build in your project, not the template)
 
