@@ -86,6 +86,21 @@ pkg/
 
 ## Patterns
 
+### Context annotations
+
+Capability anchors carry their **product context** in the declaration's doc comment, so it moves
+with the code and is enforced (`scripts/check-context.sh` via `task arch`, #34). Tags:
+
+- `@context <Name>` -- the bounded context; **must** match a `### <Name>` under `## Bounded Contexts` in `docs/prd.md`.
+- `@business <one line>` -- what it is / the outcome it produces (the why a human or agent needs at change-time).
+- `@invariant <Subject MUST/MUST NOT …>` -- the domain invariant it enforces (same format as `docs/prd.md`).
+
+**Anchors** (where `@context` + `@business` are required): the aggregate-root entity
+(`internal/domain/entity/*.go`) and each usecase command/query
+(`internal/usecase/*/command|query/*.go`). Use an ordinary doc comment -- never a `//go:` directive
+(those are compiler-reserved). `task context` surfaces these (plus the matching `docs/prd.md` block)
+when the code is touched.
+
 ### Entity (Aggregate Root)
 
 ```go
@@ -102,6 +117,11 @@ var (
     ErrFileNameConflict = errors.New("file name already exists in folder")
 )
 
+// File is the Storage aggregate root: an uploaded file tracked through its lifecycle.
+//
+// @context Storage
+// @business Lets a user upload, activate, rename, and move files within folders.
+// @invariant File MUST be in Uploading status to be Activated.
 type File struct {
     ID        uuid.UUID
     FolderID  uuid.UUID
@@ -198,6 +218,8 @@ type CreateFileOutput struct {
     File *entity.File
 }
 
+// @context Storage
+// @business Creates a file in a folder so the user can store content.
 type CreateFileCommand struct {
     fileRepo  repository.FileRepository
     txManager repository.TransactionManager
