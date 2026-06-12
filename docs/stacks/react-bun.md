@@ -95,7 +95,7 @@ The feature's primary page export carries its product context in a JSDoc comment
 export function FilesPage() { /* ... */ }
 ```
 
-`@context <Name>` should match a bounded context in `docs/prd.md`; `@business` is the one-line why.
+`@context <Name>` should match a bounded context in `docs/domain-definitions.md`; `@business` is the one-line why.
 The kernel does not gate frontend annotations (it gates the Go domain anchors); keep this as the
 convention `/impl` mirrors.
 

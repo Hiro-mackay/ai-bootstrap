@@ -21,7 +21,7 @@ git config user.email t@t.t
 git config user.name t
 
 mkdir -p docs backend/internal/domain/entity
-cat > docs/prd.md <<'EOF'
+cat > docs/domain-definitions.md <<'EOF'
 # Domain Definitions
 
 ## Bounded Contexts

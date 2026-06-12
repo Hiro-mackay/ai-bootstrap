@@ -8,14 +8,14 @@ fires. Background, the rejected alternatives, and the journey that shaped this l
 
 ## What the kernel is (shipped)
 
-- **Definitions** live in `docs/prd.md` (a domain-definitions doc): bounded contexts, ubiquitous
+- **Definitions** live in `docs/domain-definitions.md` (a domain-definitions doc): bounded contexts, ubiquitous
   language, invariants. **Not** requirements — those stay a human judgment at change-time.
 - **Code meaning** lives in declaration-local annotations (`docs/stacks/*`): `@context <Name>`,
   `@business <one line>`, `@invariant <Subject MUST/MUST NOT …>`. The SSoT; moves with the code.
 - **Enforcement** — `scripts/check-context.sh` (via `task arch`, on pre-commit and the `/impl`
   loop): completeness (Go domain/usecase anchors carry `@context` + `@business`) and binding
-  (every code `@context` matches a context in `docs/prd.md`). Anti-rot = co-located + enforced.
-- **Surface** — `task context` prints a touched file's annotations + the matching `docs/prd.md`
+  (every code `@context` matches a context in `docs/domain-definitions.md`). Anti-rot = co-located + enforced.
+- **Surface** — `task context` prints a touched file's annotations + the matching `docs/domain-definitions.md`
   block; wired into `/impl` Research and `/triage-review`.
 
 Coverage grows with the project: an empty clone with no defined contexts and no domain code passes
@@ -27,7 +27,7 @@ vacuously, so development can start immediately. The gate bites only where a rea
   are enforced, so they cannot silently drift. A scattered per-feature `why.md` (an earlier rejected
   spike) had neither property.
 - **Not a banned spec file** (`.claude/rules/sdd.md` forbids per-feature spec/plan docs because they
-  rot). The annotations describe *intent*, not implementation; `docs/prd.md` holds *definitions*,
+  rot). The annotations describe *intent*, not implementation; `docs/domain-definitions.md` holds *definitions*,
   scoped to the bounded context, not a per-PR requirements catalogue.
 - **Requirements are not managed here.** Spec correctness is a human judgment at change-time
   (`/triage-review`); the harness carries definitions + code meaning, not product requirements.
@@ -45,7 +45,7 @@ Each stage has an explicit trigger. Do not build ahead of the trigger.
 
 | Stage | What | Trigger to add it |
 |---|---|---|
-| 1. Kernel | grep/sed extraction, literal `@context` binding, prd.md definitions | shipped |
+| 1. Kernel | grep/sed extraction, literal `@context` binding, domain-definitions.md definitions | shipped |
 | 2. AST extraction | `go/ast`+`go/doc` and ts-morph instead of grep | grep gives false positives/negatives as annotation count grows |
 | 3. Embeddings | embed `@business`; semantic "where does X live" search | literal-name lookup stops scaling across many contexts |
 | 4. MCP query tools | semantic search / BFS graph traversal exposed to agents | agents need to traverse context↔code edges, not just read one record |

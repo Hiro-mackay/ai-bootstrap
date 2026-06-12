@@ -1,7 +1,7 @@
 #!/bin/sh
 # Tests for scripts/check-context.sh -- the context-harness gate (#34).
 # Completeness: Go domain/usecase anchors must carry @context + @business.
-# Binding: every code @context must match a context defined in docs/prd.md.
+# Binding: every code @context must match a context defined in docs/domain-definitions.md.
 # Vacuous: a placeholder-only prd with no domain code passes (start-anytime).
 set -u
 
@@ -22,12 +22,12 @@ check() { # check <label> <expected exit: pass|fail> <actual exit code>
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-# scaffold a minimal repo tree; $1 = bounded-context heading line for prd.md
+# scaffold a minimal repo tree; $1 = bounded-context heading line for domain-definitions.md
 scaffold() { # scaffold <context-heading>
   rm -rf "$tmp"/*
   mkdir -p "$tmp/docs" "$tmp/backend/internal/domain/entity" \
            "$tmp/backend/internal/usecase/storage/command"
-  cat > "$tmp/docs/prd.md" <<EOF
+  cat > "$tmp/docs/domain-definitions.md" <<EOF
 # Domain Definitions
 
 ## Bounded Contexts

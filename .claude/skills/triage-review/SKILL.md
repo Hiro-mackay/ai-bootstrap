@@ -29,7 +29,7 @@ findings are correct.
 If `$ARGUMENTS` is numeric, use it. Otherwise `gh pr view --json number,title,headRefName,url`.
 
 Run `task context` (the change-time context surface, #34). For each touched bounded context it
-prints `@business`/`@invariant` + the `docs/prd.md` block -- the **assumption the change must
+prints `@business`/`@invariant` + the `docs/domain-definitions.md` block -- the **assumption the change must
 respect**. Use it as a lens in the reviews below: does the diff break a recorded invariant, or
 contradict the context's stated purpose? (Requirement correctness itself stays the human call in
 §4 -- the surface informs it, it does not replace it.)

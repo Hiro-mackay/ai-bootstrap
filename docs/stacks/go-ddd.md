@@ -91,14 +91,14 @@ pkg/
 Capability anchors carry their **product context** in the declaration's doc comment, so it moves
 with the code and is enforced (`scripts/check-context.sh` via `task arch`, #34). Tags:
 
-- `@context <Name>` -- the bounded context; **must** match a `### <Name>` under `## Bounded Contexts` in `docs/prd.md`.
+- `@context <Name>` -- the bounded context; **must** match a `### <Name>` under `## Bounded Contexts` in `docs/domain-definitions.md`.
 - `@business <one line>` -- what it is / the outcome it produces (the why a human or agent needs at change-time).
-- `@invariant <Subject MUST/MUST NOT …>` -- the domain invariant it enforces (same format as `docs/prd.md`).
+- `@invariant <Subject MUST/MUST NOT …>` -- the domain invariant it enforces (same format as `docs/domain-definitions.md`).
 
 **Anchors** (where `@context` + `@business` are required): the aggregate-root entity
 (`internal/domain/entity/*.go`) and each usecase command/query
 (`internal/usecase/*/command|query/*.go`). Use an ordinary doc comment -- never a `//go:` directive
-(those are compiler-reserved). `task context` surfaces these (plus the matching `docs/prd.md` block)
+(those are compiler-reserved). `task context` surfaces these (plus the matching `docs/domain-definitions.md` block)
 when the code is touched.
 
 ### Entity (Aggregate Root)

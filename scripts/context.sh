@@ -1,6 +1,6 @@
 #!/bin/sh
 # Context surface (#34; see docs/context-harness.md). For a change, prints the in-code context annotations of the
-# touched files PLUS the matching bounded-context block from docs/prd.md -- the product context a
+# touched files PLUS the matching bounded-context block from docs/domain-definitions.md -- the product context a
 # human or agent needs at change-time. Deterministic adjacency, no retrieval. Always exits 0.
 # POSIX sh, zero deps.
 #   context.sh [base]          surface for the diff vs base (default origin/main)
@@ -65,9 +65,9 @@ for c in $contexts; do
     $0 ~ "^### "c"$" {f=1; print; next}
     f && /^(### |## )/ {f=0}
     f {print}
-  ' docs/prd.md 2>/dev/null)
+  ' docs/domain-definitions.md 2>/dev/null)
   if [ -n "$block" ]; then
-    printf '\n=== docs/prd.md -- %s ===\n%s\n' "$c" "$block"
+    printf '\n=== docs/domain-definitions.md -- %s ===\n%s\n' "$c" "$block"
   fi
 done
 IFS=$oldifs

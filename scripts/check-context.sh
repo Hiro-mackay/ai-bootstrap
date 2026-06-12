@@ -1,9 +1,9 @@
 #!/bin/sh
 # Context-harness gate (#34; see docs/context-harness.md). Enforces the in-code context annotations against the
-# domain definitions in docs/prd.md. The anti-rot mechanism: annotations are declaration-local
+# domain definitions in docs/domain-definitions.md. The anti-rot mechanism: annotations are declaration-local
 # (move with the code) AND a missing/stale one fails the commit.
 #   completeness -- each Go domain/usecase ANCHOR carries @context + @business
-#   binding      -- every code @context value matches a context defined in docs/prd.md
+#   binding      -- every code @context value matches a context defined in docs/domain-definitions.md
 # Vacuous by design: a placeholder-only prd with no domain code passes (start-anytime).
 # POSIX sh, zero deps. Exit 1 on any violation. Run from the repo root.
 set -u
@@ -16,10 +16,10 @@ report() { # $1 = message, $2 = violations (empty = ok)
   fi
 }
 
-# --- defined bounded contexts: ### headings under "## Bounded Contexts" in prd.md (drop placeholders) ---
+# --- defined bounded contexts: ### headings under "## Bounded Contexts" in domain-definitions.md (drop placeholders) ---
 defined=""
-if [ -f docs/prd.md ]; then
-  defined=$(sed -n '/^## Bounded Contexts/,/^## /p' docs/prd.md \
+if [ -f docs/domain-definitions.md ]; then
+  defined=$(sed -n '/^## Bounded Contexts/,/^## /p' docs/domain-definitions.md \
     | grep '^### ' | sed 's/^### *//' | sed 's/[[:space:]]*$//' | grep -v '{{' || true)
 fi
 
@@ -56,12 +56,12 @@ IFS='
 for v in $used; do
   [ -n "$v" ] || continue
   if ! printf '%s\n' "$defined" | grep -qxF "$v"; then
-    unbound="$unbound@context $v -- not a bounded context in docs/prd.md
+    unbound="$unbound@context $v -- not a bounded context in docs/domain-definitions.md
 "
   fi
 done
 IFS=$oldifs
-report "@context not defined in docs/prd.md (typo or stale context)" "$unbound"
+report "@context not defined in docs/domain-definitions.md (typo or stale context)" "$unbound"
 
 if [ "$fail" -ne 0 ]; then
   printf '\nContext-harness checks FAILED.\n' >&2
