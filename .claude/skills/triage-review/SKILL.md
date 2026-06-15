@@ -70,7 +70,14 @@ Run A and B in a single message so they execute concurrently; do not synthesize 
 ## 3. Synthesize (no judgment)
 
 Merge both outputs into one table; assign a **fix-priority** P0-P3 based on impact
-(what breaks if ignored) and immediacy (does it bite this PR). `severity` describes
+(what breaks if ignored) and immediacy (does it bite this PR).
+
+Add an **annotation-freshness lens** before merging: for each modified file that
+carries `@business`/`@invariant`, check whether those annotation lines changed
+proportionally to the logic change. If domain behavior appears to have shifted but
+the annotation is identical to `origin/main`, flag it as a finding (P1 if an
+invariant is affected, P2 otherwise). Use `task context -- --path <file>` to surface
+the current annotation alongside the `domain-definitions.md` block. `severity` describes
 the issue; `fix-priority` is how strongly to act now -- they can diverge.
 
 | Label | Meaning |

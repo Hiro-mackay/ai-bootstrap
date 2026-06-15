@@ -27,6 +27,11 @@ One task = one atomic commit (constitution Article III). Acceptance criteria are
 written as **tests, not documents** (the `test-strategy` rule covers TDD). Run
 scoped checks (`task check`, `task go:test` / `task react:test`) before each commit.
 
+When a modified file carries `@context`/`@business`/`@invariant` annotations, run
+`task context -- --path <file>` and verify annotation content still holds; update
+before committing. (`check-context.sh` surfaces unchanged annotations on staged files
+as a reminder; it cannot verify content accuracy automatically.)
+
 ## ADR triggers
 
 Create an ADR (`docs/decisions/`, from `000-template.md`) only for: new external

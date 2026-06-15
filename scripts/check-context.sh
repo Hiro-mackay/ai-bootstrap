@@ -63,6 +63,31 @@ done
 IFS=$oldifs
 report "@context not defined in docs/domain-definitions.md (typo or stale context)" "$unbound"
 
+# --- staleness surface: staged files with unchanged content annotations ---
+# When a Go file's logic was staged but @business/@invariant lines were not touched,
+# the annotation may be stale. Cannot verify content automatically; surface for human review.
+staged=$(git diff --cached --name-only 2>/dev/null | grep '\.go$' | grep -v '_test\.go$' || true)
+stale_warn=""
+IFS='
+'
+for f in $staged; do
+  [ -n "$f" ] || continue
+  [ -f "$f" ] || continue
+  if grep -q '@business[[:space:]]\|@invariant[[:space:]]' "$f" 2>/dev/null; then
+    if ! git diff --cached -- "$f" 2>/dev/null | grep -qE '^\+.*@(business|invariant) |^-.*@(business|invariant) '; then
+      anns=$(grep -n '@business\|@invariant' "$f" | sed 's/^/    /')
+      stale_warn="${stale_warn}  ${f}:
+${anns}
+"
+    fi
+  fi
+done
+IFS=$oldifs
+if [ -n "$stale_warn" ]; then
+  printf '\n[CONTEXT] annotation content not updated -- verify these are still accurate:\n%s' "$stale_warn"
+  printf '  Run: task context -- --path <file>  to surface the full definition block.\n'
+fi
+
 if [ "$fail" -ne 0 ]; then
   printf '\nContext-harness checks FAILED.\n' >&2
   exit 1
