@@ -6,8 +6,7 @@ invariants. It is the "what and where" counterpart to `docs/architecture.md` (th
 **Definitions only.** Product requirements, goals, and feature-why are NOT recorded here -- they
 stay a human judgment at change-time (the spec-correctness gate; see #34). What lives here is the
 stable domain vocabulary that code annotations (`@context` / `@invariant`, see `docs/stacks/`) bind
-to and `task context` surfaces. (Filename is `prd.md` for historical reasons; the content is
-definitions, not a requirements catalogue.)
+to and `task context` surfaces.
 
 ## Domain Overview
 

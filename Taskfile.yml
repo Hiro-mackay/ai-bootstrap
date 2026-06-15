@@ -59,7 +59,7 @@ tasks:
     cmd: sh scripts/test/worktree-ports.test.sh
 
   context:
-    desc: 'Surface the touched files'' context annotations + matching prd.md block (#34). Usage: task context [-- <base>|--path <p>]'
+    desc: 'Surface the touched files'' context annotations + matching domain-definitions.md block (#34). Usage: task context [-- <base>|--path <p>]'
     cmd: sh scripts/context.sh {{.CLI_ARGS}}
 
   context:test:

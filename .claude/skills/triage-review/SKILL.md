@@ -29,7 +29,7 @@ findings are correct.
 If `$ARGUMENTS` is numeric, use it. Otherwise `gh pr view --json number,title,headRefName,url`.
 
 Run `task context` (the change-time context surface, #34). For each touched bounded context it
-prints `@business`/`@invariant` + the `docs/prd.md` block -- the **assumption the change must
+prints `@business`/`@invariant` + the `docs/domain-definitions.md` block -- the **assumption the change must
 respect**. Use it as a lens in the reviews below: does the diff break a recorded invariant, or
 contradict the context's stated purpose? (Requirement correctness itself stays the human call in
 §4 -- the surface informs it, it does not replace it.)
@@ -70,7 +70,14 @@ Run A and B in a single message so they execute concurrently; do not synthesize 
 ## 3. Synthesize (no judgment)
 
 Merge both outputs into one table; assign a **fix-priority** P0-P3 based on impact
-(what breaks if ignored) and immediacy (does it bite this PR). `severity` describes
+(what breaks if ignored) and immediacy (does it bite this PR).
+
+Add an **annotation-freshness lens** before merging: for each modified file that
+carries `@business`/`@invariant`, check whether those annotation lines changed
+proportionally to the logic change. If domain behavior appears to have shifted but
+the annotation is identical to `origin/main`, flag it as a finding (P1 if an
+invariant is affected, P2 otherwise). Use `task context -- --path <file>` to surface
+the current annotation alongside the `domain-definitions.md` block. `severity` describes
 the issue; `fix-priority` is how strongly to act now -- they can diverge.
 
 | Label | Meaning |

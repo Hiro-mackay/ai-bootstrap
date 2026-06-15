@@ -43,10 +43,10 @@ Extract: title, body (summary / acceptance criteria / dependencies), `type` labe
 Spawn 1-3 Explore agents in parallel for codebase reconnaissance based on the issue:
 files by path, symbols by name, existing patterns/slices the change must mirror,
 tests touching the area. Read `docs/constitution.md` and the relevant
-`docs/stacks/*.md`; confirm domain boundaries against `docs/prd.md`.
+`docs/stacks/*.md`; confirm domain boundaries against `docs/domain-definitions.md`.
 
 Run `task context -- --path <a file you will touch>` (or `task context` once a branch diff
-exists): if it surfaces a bounded-context record (`@business`/`@invariant` + the `docs/prd.md`
+exists): if it surfaces a bounded-context record (`@business`/`@invariant` + the `docs/domain-definitions.md`
 block), treat it as **binding context** for the spec and plan -- respect the invariants, and flag
 in plan mode if the change contradicts one (#34).
 
@@ -68,9 +68,10 @@ After approval, for each task in order:
 
 1. `TaskCreate` the active task (`in_progress` now, `completed` the moment it lands).
 2. Implement with Edit / Write, mirroring `docs/stacks/*` and existing slices.
-3. Run scoped checks before committing: `task check`, plus `task go:test` (if `backend/` changed) and/or `task react:test` (if `frontend/` changed).
-4. One atomic commit per task: `<type>(<scope>): <imperative>`. Never `--no-verify` / `--force`.
-5. Do NOT push or open a PR -- that is `/ship`.
+3. If the modified file carries `@context`/`@business`/`@invariant`, run `task context -- --path <file>` and verify annotation content is still accurate. Update before committing -- stale annotations are a correctness defect, not a nit.
+4. Run scoped checks before committing: `task check`, plus `task go:test` (if `backend/` changed) and/or `task react:test` (if `frontend/` changed).
+5. One atomic commit per task: `<type>(<scope>): <imperative>`. Never `--no-verify` / `--force`.
+6. Do NOT push or open a PR -- that is `/ship`.
 
 If a task balloons, re-plan in plan mode: update the tasks, surface the divergence, continue. Never abandon the plan silently.
 

@@ -50,13 +50,13 @@ Fill `docs/architecture.md`:
 
 Summarize before writing.
 
-## Step 5: Domain Definitions (`docs/prd.md`) -- optional
+## Step 5: Domain Definitions (`docs/domain-definitions.md`) -- optional
 
 This is the **domain definitions** doc (bounded contexts, ubiquitous language, invariants) --
 **not** a requirements catalogue; requirements/goals stay a human judgment at change-time (#34).
 The bounded-context names recorded here are what code `@context` annotations bind to (`task context`).
 
-`docs/prd.md`; the `ddd-principles` rule is auto-loaded. Interview: domain overview,
+`docs/domain-definitions.md`; the `ddd-principles` rule is auto-loaded. Interview: domain overview,
 core vs supporting subdomains, ubiquitous language, bounded contexts, aggregates
 (root/entities/VOs/invariants), domain events, context map. Skipping is fine -- the
 definitions doc is recommended, not blocking.
@@ -88,7 +88,7 @@ Personalized: $PROJECT_NAME
 Next:
   1. task setup   (if not done) -- deps, DB, codegen, git hooks
   2. task dev     -- start the dev servers
-  3. Review docs/architecture.md, docs/prd.md, docs/constitution.md
+  3. Review docs/architecture.md, docs/domain-definitions.md, docs/constitution.md
   4. First change: open a GitHub issue (WHAT + Why), then /impl <issue#>
      (mirror docs/stacks and existing slices for structure).
 ```

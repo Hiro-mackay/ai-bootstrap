@@ -18,7 +18,7 @@ source of truth.
 - **WHAT (+ Why)** is captured in the GitHub issue; **HOW** is realized in the PR
 - The spec (problem, user stories, acceptance criteria) is defined in plan mode and expressed as tests -- never as a per-feature spec document
 - The link between intent and implementation lives in the codebase as living information: tests, and comments where the *why* is non-obvious
-- Scope each change to a single bounded context defined in `docs/prd.md`; cross-context changes go through the context map
+- Scope each change to a single bounded context defined in `docs/domain-definitions.md`; cross-context changes go through the context map
 - Bug fixes require at minimum: a reproduction (a failing test) before the fix
 
 ### Article II: Tests Are Executable Specs
@@ -49,7 +49,7 @@ All structural decisions are reflected there. It is always up to date.
 - Past decisions and rationale are recorded as ADRs in `docs/decisions/`
 - If the code disagrees with architecture.md, one of them must be fixed immediately
 - Significant architectural changes require an ADR before implementation
-- Product boundaries and domain models are defined in `docs/prd.md`
+- Product boundaries and domain models are defined in `docs/domain-definitions.md`
 
 ### Article V: Dependencies Point Inward
 
