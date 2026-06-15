@@ -119,7 +119,7 @@ package entity
 // @business Lets a user store and retrieve files.
 type File struct{ ID string }
 EOF
-(cd "$tmp" && git add -A && git commit -qm init 2>/dev/null)
+(cd "$tmp" && git add -A && git commit -qm init)
 printf '// changed logic\n' >> "$tmp/backend/internal/domain/entity/file.go"
 (cd "$tmp" && git add backend/internal/domain/entity/file.go)
 stale_out=$( (cd "$tmp" && sh "$SCRIPT") 2>&1 )
@@ -137,7 +137,7 @@ package entity
 // @invariant File MUST have an owner.
 type File struct{ ID string }
 EOF
-(cd "$tmp" && git add -A && git commit -qm init 2>/dev/null)
+(cd "$tmp" && git add -A && git commit -qm init)
 cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
 package entity
 // @context Storage
@@ -148,8 +148,34 @@ EOF
 (cd "$tmp" && git add backend/internal/domain/entity/file.go)
 stale_out=$( (cd "$tmp" && sh "$SCRIPT") 2>&1 )
 case "$stale_out" in
-  *"@invariant unchanged"*) echo "ok   - staleness: warns @invariant even when @business updated" ;;
+  *"@invariant"*"updated in diff"*) echo "ok   - staleness: warns @invariant even when @business updated" ;;
   *) echo "FAIL - staleness: missed stale @invariant when @business changed" >&2; fail=1 ;;
+esac
+
+# --- staleness surface: two @invariant lines, one updated -> warns for unchanged one ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+// @context Storage
+// @business Lets a user store and retrieve files.
+// @invariant File MUST have an owner.
+// @invariant File MUST NOT exceed 100MB.
+type File struct{ ID string }
+EOF
+(cd "$tmp" && git add -A && git commit -qm init)
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+// @context Storage
+// @business Lets a user store and retrieve files.
+// @invariant File MUST have a registered owner.
+// @invariant File MUST NOT exceed 100MB.
+type File struct{ ID string }
+EOF
+(cd "$tmp" && git add backend/internal/domain/entity/file.go)
+stale_out=$( (cd "$tmp" && sh "$SCRIPT") 2>&1 )
+case "$stale_out" in
+  *"@invariant"*) echo "ok   - staleness: warns unchanged @invariant when other @invariant updated" ;;
+  *) echo "FAIL - staleness: missed unchanged @invariant in multi-invariant file" >&2; fail=1 ;;
 esac
 
 # --- staleness surface: both annotations updated -> no warning ---
@@ -161,7 +187,7 @@ package entity
 // @invariant File MUST have an owner.
 type File struct{ ID string }
 EOF
-(cd "$tmp" && git add -A && git commit -qm init 2>/dev/null)
+(cd "$tmp" && git add -A && git commit -qm init)
 cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
 package entity
 // @context Storage

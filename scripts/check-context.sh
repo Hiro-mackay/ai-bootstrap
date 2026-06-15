@@ -63,10 +63,13 @@ done
 IFS=$oldifs
 report "@context not defined in docs/domain-definitions.md (typo or stale context)" "$unbound"
 
-# --- staleness surface: staged files with per-tag unchanged content annotations ---
-# When a Go file's logic was staged but individual @business/@invariant lines were not touched,
-# that specific annotation may be stale. Checked per-tag so updating @business still surfaces
-# an unchanged @invariant in the same file. Cannot verify content automatically; surface only.
+# --- staleness surface: staged files with per-annotation unchanged content ---
+# When a Go file's logic was staged but individual @business/@invariant lines were not
+# explicitly updated, those annotations may be stale. Compares the count of @tag lines in
+# the working-copy file against the count added in the staged diff so that updating one
+# @invariant still surfaces other unchanged @invariant lines in the same file.
+# Known limitation: reads working-copy content; a partial re-stage (file edited after staging)
+# can produce a false-positive warning — acceptable at pre-commit time.
 staged=$(git diff --cached --name-only 2>/dev/null | grep '\.go$' | grep -v '_test\.go$' || true)
 stale_warn=""
 IFS='
@@ -75,15 +78,21 @@ for f in $staged; do
   [ -n "$f" ] || continue
   [ -f "$f" ] || continue
   diff_output=$(git diff --cached -- "$f" 2>/dev/null)
+  # Skip pure renames and empty diffs -- no content lines means no logic change.
+  if ! printf '%s\n' "$diff_output" | grep -qE '^\+[^+]|^-[^-]'; then
+    continue
+  fi
   for tag in business invariant; do
-    if grep -q "@${tag}[[:space:]]" "$f" 2>/dev/null; then
-      if ! printf '%s\n' "$diff_output" \
-           | grep -qE "^\+[[:space:]]*[*/]*[[:space:]]*@${tag}[[:space:]]|^-[[:space:]]*[*/]*[[:space:]]*@${tag}[[:space:]]"; then
-        anns=$(grep -n "@${tag}" "$f" | sed 's/^/    /')
-        stale_warn="${stale_warn}  ${f} (@${tag} unchanged):
+    # grep -c always outputs "0" on no match (exit 1); omit || echo 0 to avoid "0\n0" double-zero.
+    current_count=$(grep -c "@${tag}[[:space:]]" "$f" 2>/dev/null)
+    [ "${current_count:-0}" -eq 0 ] && continue
+    added_count=$(printf '%s\n' "$diff_output" \
+      | grep -cE "^\+[[:space:]]*[*/]*[[:space:]]*@${tag}[[:space:]]" 2>/dev/null)
+    if [ "${current_count:-0}" -gt "${added_count:-0}" ]; then
+      anns=$(grep -n "@${tag}[[:space:]]" "$f" | sed 's/^/    /')
+      stale_warn="${stale_warn}  ${f} (@${tag}: ${current_count} line(s), ${added_count:-0} updated in diff):
 ${anns}
 "
-      fi
     fi
   done
 done
