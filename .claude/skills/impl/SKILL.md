@@ -71,7 +71,7 @@ After approval, for each task in order:
 3. If the modified file carries `@context`/`@business`/`@invariant`, run `task context -- --path <file>` and verify annotation content is still accurate. Update before committing -- stale annotations are a correctness defect, not a nit.
 4. Run scoped checks before committing: `task check`, plus `task go:test` (if `backend/` changed) and/or `task react:test` (if `frontend/` changed).
 5. One atomic commit per task: `<type>(<scope>): <imperative>`. Never `--no-verify` / `--force`.
-5. Do NOT push or open a PR -- that is `/ship`.
+6. Do NOT push or open a PR -- that is `/ship`.
 
 If a task balloons, re-plan in plan mode: update the tasks, surface the divergence, continue. Never abandon the plan silently.
 

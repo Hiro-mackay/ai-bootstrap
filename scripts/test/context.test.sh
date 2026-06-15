@@ -52,12 +52,12 @@ git add -A
 git commit -qm base
 git tag base
 
-# --- touching the annotated entity surfaces its @business and the prd Storage block ---
+# --- touching the annotated entity surfaces its @business and the domain-definitions Storage block ---
 printf '// touched\n' >> backend/internal/domain/entity/file.go
 git add -A; git commit -qm c
 out=$(sh "$SCRIPT" base 2>/dev/null)
 check "surfaces @business" "Lets a user store and retrieve files." "$out"
-check "surfaces prd context block" "owns files and folders." "$out"
+check "surfaces domain-definitions context block" "owns files and folders." "$out"
 check "does not pull an untouched context" "Storage" "$out"  # Storage present...
 case "$out" in *"charges customers"*) echo "FAIL - leaked Billing block" >&2; fail=1 ;; *) echo "ok   - no untouched-context leak" ;; esac
 git reset -q --hard base; git clean -qfd

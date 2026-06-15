@@ -2,7 +2,7 @@
 # Tests for scripts/check-context.sh -- the context-harness gate (#34).
 # Completeness: Go domain/usecase anchors must carry @context + @business.
 # Binding: every code @context must match a context defined in docs/domain-definitions.md.
-# Vacuous: a placeholder-only prd with no domain code passes (start-anytime).
+# Vacuous: a placeholder-only domain-definitions.md with no domain code passes (start-anytime).
 set -u
 
 SCRIPT=$(CDPATH= cd "$(dirname "$0")/.." && pwd)/check-context.sh
@@ -19,14 +19,16 @@ check() { # check <label> <expected exit: pass|fail> <actual exit code>
   fi
 }
 
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
+tmp=$(mktemp -d) || { echo "mktemp -d failed" >&2; exit 1; }
+trap 'rm -rf "${tmp}"' EXIT
 
 # scaffold a minimal repo tree; $1 = bounded-context heading line for domain-definitions.md
 scaffold() { # scaffold <context-heading>
-  rm -rf "$tmp"/*
+  rm -rf "${tmp:?}/docs" "${tmp:?}/backend" "${tmp:?}/.git"
   mkdir -p "$tmp/docs" "$tmp/backend/internal/domain/entity" \
            "$tmp/backend/internal/usecase/storage/command"
+  git -C "$tmp" init -q
+  git -C "$tmp" config user.email "test@test" && git -C "$tmp" config user.name "test"
   cat > "$tmp/docs/domain-definitions.md" <<EOF
 # Domain Definitions
 
@@ -42,7 +44,7 @@ run() { ( cd "$tmp" && sh "$SCRIPT" >/dev/null 2>&1; echo $? ); }
 
 # --- vacuous: placeholder context, no domain code -> pass ---
 scaffold '### {{CONTEXT_NAME}}'
-check "placeholder prd + no code -> pass" pass "$(run)"
+check "placeholder domain-definitions + no code -> pass" pass "$(run)"
 
 # --- defined context + fully annotated entity -> pass ---
 scaffold '### Storage'
@@ -61,7 +63,7 @@ printf 'package entity\n\ntype File struct{ ID string }\n' \
   > "$tmp/backend/internal/domain/entity/file.go"
 check "unannotated entity -> fail (completeness)" fail "$(run)"
 
-# --- @context not defined in prd -> fail (binding) ---
+# --- @context not defined in domain-definitions.md -> fail (binding) ---
 scaffold '### Storage'
 cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
 package entity
@@ -108,6 +110,71 @@ package entity
 type File struct{ ID string }
 EOF
 check "@context 'Storage Archive' vs '### Storage' -> fail (no prefix match)" fail "$(run)"
+
+# --- staleness surface: staged file with unchanged @business -> warns ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+// @context Storage
+// @business Lets a user store and retrieve files.
+type File struct{ ID string }
+EOF
+(cd "$tmp" && git add -A && git commit -qm init 2>/dev/null)
+printf '// changed logic\n' >> "$tmp/backend/internal/domain/entity/file.go"
+(cd "$tmp" && git add backend/internal/domain/entity/file.go)
+stale_out=$( (cd "$tmp" && sh "$SCRIPT") 2>&1 )
+case "$stale_out" in
+  *"annotation content not updated"*) echo "ok   - staleness: warns when @business unchanged" ;;
+  *) echo "FAIL - staleness: missing warning for unchanged @business" >&2; fail=1 ;;
+esac
+
+# --- staleness surface: updating @business surfaces unchanged @invariant in same file ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+// @context Storage
+// @business Lets a user store and retrieve files.
+// @invariant File MUST have an owner.
+type File struct{ ID string }
+EOF
+(cd "$tmp" && git add -A && git commit -qm init 2>/dev/null)
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+// @context Storage
+// @business Updated description.
+// @invariant File MUST have an owner.
+type File struct{ ID string }
+EOF
+(cd "$tmp" && git add backend/internal/domain/entity/file.go)
+stale_out=$( (cd "$tmp" && sh "$SCRIPT") 2>&1 )
+case "$stale_out" in
+  *"@invariant unchanged"*) echo "ok   - staleness: warns @invariant even when @business updated" ;;
+  *) echo "FAIL - staleness: missed stale @invariant when @business changed" >&2; fail=1 ;;
+esac
+
+# --- staleness surface: both annotations updated -> no warning ---
+scaffold '### Storage'
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+// @context Storage
+// @business Original.
+// @invariant File MUST have an owner.
+type File struct{ ID string }
+EOF
+(cd "$tmp" && git add -A && git commit -qm init 2>/dev/null)
+cat > "$tmp/backend/internal/domain/entity/file.go" <<'EOF'
+package entity
+// @context Storage
+// @business Updated.
+// @invariant File MUST have an updated owner.
+type File struct{ ID string }
+EOF
+(cd "$tmp" && git add backend/internal/domain/entity/file.go)
+stale_out=$( (cd "$tmp" && sh "$SCRIPT") 2>&1 )
+case "$stale_out" in
+  *"annotation content not updated"*) echo "FAIL - staleness: false warning when both annotations updated" >&2; fail=1 ;;
+  *) echo "ok   - staleness: no warning when both annotations updated" ;;
+esac
 
 [ "$fail" -eq 0 ] && echo "check-context: all tests passed"
 exit "$fail"

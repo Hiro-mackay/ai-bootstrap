@@ -4,7 +4,7 @@
 # (move with the code) AND a missing/stale one fails the commit.
 #   completeness -- each Go domain/usecase ANCHOR carries @context + @business
 #   binding      -- every code @context value matches a context defined in docs/domain-definitions.md
-# Vacuous by design: a placeholder-only prd with no domain code passes (start-anytime).
+# Vacuous by design: a placeholder-only domain-definitions doc with no domain code passes (start-anytime).
 # POSIX sh, zero deps. Exit 1 on any violation. Run from the repo root.
 set -u
 
@@ -63,9 +63,10 @@ done
 IFS=$oldifs
 report "@context not defined in docs/domain-definitions.md (typo or stale context)" "$unbound"
 
-# --- staleness surface: staged files with unchanged content annotations ---
-# When a Go file's logic was staged but @business/@invariant lines were not touched,
-# the annotation may be stale. Cannot verify content automatically; surface for human review.
+# --- staleness surface: staged files with per-tag unchanged content annotations ---
+# When a Go file's logic was staged but individual @business/@invariant lines were not touched,
+# that specific annotation may be stale. Checked per-tag so updating @business still surfaces
+# an unchanged @invariant in the same file. Cannot verify content automatically; surface only.
 staged=$(git diff --cached --name-only 2>/dev/null | grep '\.go$' | grep -v '_test\.go$' || true)
 stale_warn=""
 IFS='
@@ -73,19 +74,23 @@ IFS='
 for f in $staged; do
   [ -n "$f" ] || continue
   [ -f "$f" ] || continue
-  if grep -q '@business[[:space:]]\|@invariant[[:space:]]' "$f" 2>/dev/null; then
-    if ! git diff --cached -- "$f" 2>/dev/null | grep -qE '^\+.*@(business|invariant) |^-.*@(business|invariant) '; then
-      anns=$(grep -n '@business\|@invariant' "$f" | sed 's/^/    /')
-      stale_warn="${stale_warn}  ${f}:
+  diff_output=$(git diff --cached -- "$f" 2>/dev/null)
+  for tag in business invariant; do
+    if grep -q "@${tag}[[:space:]]" "$f" 2>/dev/null; then
+      if ! printf '%s\n' "$diff_output" \
+           | grep -qE "^\+[[:space:]]*[*/]*[[:space:]]*@${tag}[[:space:]]|^-[[:space:]]*[*/]*[[:space:]]*@${tag}[[:space:]]"; then
+        anns=$(grep -n "@${tag}" "$f" | sed 's/^/    /')
+        stale_warn="${stale_warn}  ${f} (@${tag} unchanged):
 ${anns}
 "
+      fi
     fi
-  fi
+  done
 done
 IFS=$oldifs
 if [ -n "$stale_warn" ]; then
-  printf '\n[CONTEXT] annotation content not updated -- verify these are still accurate:\n%s' "$stale_warn"
-  printf '  Run: task context -- --path <file>  to surface the full definition block.\n'
+  printf '\n[CONTEXT] annotation content not updated -- verify these are still accurate:\n%s' "$stale_warn" >&2
+  printf '  Run: task context -- --path <file>  to surface the full definition block.\n' >&2
 fi
 
 if [ "$fail" -ne 0 ]; then

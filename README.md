@@ -102,7 +102,7 @@ See [`.claude/rules/git-workflow.md`](.claude/rules/git-workflow.md).
 └── docs/
     ├── constitution.md              # Project rules and principles
     ├── architecture.md              # System design (source of truth)
-    ├── domain-definitions.md                       # Domain definitions (bounded contexts, invariants)
+    ├── domain-definitions.md        # Domain definitions (bounded contexts, invariants)
     ├── harness.md                   # How the AI harness works (guides, sensors, the loop)
     ├── stacks/                      # Stack reference architecture (canonical patterns)
     └── decisions/                   # Architecture Decision Records
