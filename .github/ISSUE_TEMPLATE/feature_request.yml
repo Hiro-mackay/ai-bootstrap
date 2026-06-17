@@ -1,63 +1,74 @@
 name: Feature Request
-description: Suggest a new feature or improvement
-labels: ["enhancement"]
+description: New capability visible to users. The issue is the context package (WHAT + Why); HOW is decided in /impl plan mode.
+labels: ["feat"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for suggesting a feature. Please describe your idea so we
-        can evaluate and prioritize it.
+        Issue に書くのは「何を作るか・なぜ作るか」のみ。
+        実装の詳細 (ドメインクラス名・関数名・DB スキーマ・フレームワーク API 等) は `/impl` plan mode が決める。
 
   - type: textarea
     id: problem
     attributes:
       label: Problem Statement
-      description: |
-        What problem does this feature solve? Describe the use case
-        or pain point that motivates this request.
-      placeholder: I'm always frustrated when...
+      description: What problem does this feature solve? Describe the use case or pain point.
+      placeholder: 現状 X の課題がある。Y をできるようにしたい。
     validations:
       required: true
+
+  - type: textarea
+    id: design_reference
+    attributes:
+      label: Design Reference
+      description: |
+        Wireframes, ADRs, or other design artifacts this issue implements.
+        File paths or issue/ADR numbers only — no description needed here.
+      placeholder: |
+        - docs/sketches/workspace-home.html
+        - ADR-016
+    validations:
+      required: false
 
   - type: textarea
     id: solution
     attributes:
       label: Proposed Solution
-      description: Describe the solution you'd like to see implemented.
-      placeholder: Describe your proposed solution...
+      description: |
+        What to build — user-facing behaviors and screens.
+        Do NOT include domain class names, function signatures, DB schema, framework APIs, or layer structure.
+      placeholder: |
+        - ユーザーが X をできる画面を追加する
+        - Y の操作で Z が起きる
     validations:
       required: true
 
   - type: textarea
-    id: alternatives
+    id: acceptance
     attributes:
-      label: Alternatives Considered
-      description: |
-        Have you considered any alternative solutions or workarounds?
-      placeholder: Describe alternatives you've considered...
+      label: Acceptance Criteria
+      description: Testable statements in Given/When/Then form. These become test descriptions in /impl.
+      placeholder: |
+        - Given: ... / When: ... / Then: ...
+    validations:
+      required: true
+
+  - type: input
+    id: branch
+    attributes:
+      label: Suggested Branch
+      description: "`<type>/<theme-slug>` (issue# は起票後に末尾追記)"
+      placeholder: feat/workspace-home
     validations:
       required: false
 
   - type: textarea
-    id: context
+    id: dependencies
     attributes:
-      label: Additional Context
-      description: |
-        Add any other context, mockups, or references that would help
-        us understand the feature request.
-      placeholder: Any additional context...
+      label: Dependencies
+      description: 先行マージ必須の issue・関連 ADR を列挙。
+      placeholder: |
+        - 先行: #N
+        - ADR-0NN
     validations:
       required: false
-
-  - type: dropdown
-    id: priority
-    attributes:
-      label: Priority
-      description: How important is this feature to you?
-      options:
-        - Nice to have
-        - Would improve workflow
-        - Important for my use case
-        - Blocking my work
-    validations:
-      required: true
