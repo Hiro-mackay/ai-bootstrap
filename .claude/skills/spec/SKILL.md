@@ -45,6 +45,9 @@ gh issue list --state open --limit 50
 
 to check for duplicate or closely related issues before drafting a new one.
 
+Steps 1 and 2 can run in parallel — spawn the Explore agents while reading the
+alignment docs.
+
 ## 2. Alignment
 
 Read `docs/constitution.md` and `docs/domain-definitions.md`.
@@ -78,13 +81,21 @@ it shapes the PR title, the commit type, and the branch name.
 
 Select the issue template that matches:
 
-- `feat` → `feature_request.yml` fields: Problem Statement, Proposed Solution, Alternatives, Acceptance Criteria, Suggested Branch, Dependencies
+- `feat` → `feature_request.yml` fields: Problem Statement, Design Reference (optional), Proposed Solution, Acceptance Criteria, Suggested Branch, Dependencies
 - `fix` → `bug_report.yml` fields: Description, Steps to Reproduce, Expected / Actual Behavior
 - `refactor` / `chore` / `docs` / `test` / `perf` → no dedicated template; write the body
   directly with these sections: **Summary** (why the change is needed), **Acceptance Criteria**
   (checklist that defines "done"), **Suggested Branch**, **Dependencies**
 
-## 4. Decomposition check
+## 4. Clarify
+
+Use `AskUserQuestion` only for genuine forks that materially change scope or which
+bounded context owns the work (max 2-3 questions per turn). Routine choices: assume
+and state the assumption in the draft. Do not ask about things research can answer.
+
+Clarify **before** drafting — unresolved forks produce the wrong draft.
+
+## 5. Decomposition check
 
 Assess whether the idea fits in one issue or should become several.
 
@@ -101,9 +112,39 @@ When splitting is warranted, draft all issues and show the user the proposed set
 the dependency links (`Dependencies:` section pointing to each other) before creating
 any of them.
 
-## 5. Draft the issue body
+## 6. Draft the issue body
 
 Fill the chosen template's fields. Standards that apply regardless of template:
+
+### WHAT vs HOW boundary
+
+The issue captures **what to build and why**. HOW is decided in `/impl` plan mode.
+
+**Do NOT write in the issue body:**
+
+- Domain class names, aggregate names, entity names (e.g. `DocumentShare`, `WorkspaceMember`)
+- Function names, method names, application-layer use case names
+- DB schema or migration details
+- Specific framework or library API names
+- Layer structure details (e.g. "Application 層に XXX を実装する")
+
+If you find yourself writing any of the above, replace it with the user-visible behavior it produces.
+
+### Design Reference
+
+When the input references design artifacts (wireframes, ADRs, sketches, etc.),
+add a **Design Reference** section to the issue body immediately before Proposed Solution:
+
+```
+## Design Reference
+
+- docs/sketches/workspace-home.html
+- ADR-016
+```
+
+List file paths or issue/ADR numbers only. No description — the artifacts speak for themselves.
+
+### Other required standards
 
 **Acceptance Criteria** — write every criterion as a testable statement, leaning
 toward Given/When/Then form. These become test descriptions in `/impl`. Vague criteria
@@ -121,12 +162,6 @@ infrastructure component — per `.claude/rules/sdd.md`), add a note in the body
 > Note: this change requires an ADR. `/impl` will draft it in plan mode.
 
 Do **not** write the ADR here. That belongs in `/impl` plan mode.
-
-## 6. Clarify
-
-Use `AskUserQuestion` only for genuine forks that materially change scope or which
-bounded context owns the work (max 2-3 questions per turn). Routine choices: assume
-and state the assumption in the draft. Do not ask about things research can answer.
 
 ## 7. Confirm (human moment)
 
