@@ -36,21 +36,19 @@ contradict the context's stated purpose? (Requirement correctness itself stays t
 
 ## 2. Independent reviews (one message, concurrent)
 
-### Reviewer A -- Claude `/code-review` (always)
+Spawn all three reviewers in a single message: A and C as Agent calls, B as a background Bash call. Do not synthesize until all three return.
 
-`/code-review` is the current-generation diff reviewer (correctness-bug focus tuned
-for diffs, plus reuse/simplification/efficiency, with an effort dial). Run it at
-**high** effort, findings-only. Two hard rules for this subagent: never pass
-`--fix`/`--comment` (the user-selected fixes land in §5, not here), and never use the
-`ultra` level (it is a billed cloud run the model cannot launch).
+### Reviewer A -- code-reviewer agent (always)
+
+Runs the project's full review criteria: bugs, resilience, quality, over-engineering.
 
 ```
-Agent({ subagent_type: "general-purpose",
-  description: "Claude /code-review of PR #<n>",
-  prompt: "Invoke the local code-review skill (Skill tool, skill=\"code-review\", args=\"high\") against the current branch diff. \
+Agent({ subagent_type: "code-reviewer",
+  description: "code-reviewer of PR #<n>",
+  prompt: "Review the current branch diff against your standard criteria (review-local). \
 Context: <one-paragraph PR brief>. Already-rejected findings (do NOT re-flag): <list>. \
-Normalize each finding to: file:line, severity (blocker/major/minor/nit), recommendation. \
-Do NOT pass --fix/--comment, do NOT use the ultra level, do NOT implement fixes." })
+findings-only -- do NOT implement fixes. \
+Normalize each finding to: file:line, severity (blocker/major/minor/nit), recommendation." })
 ```
 
 ### Reviewer B -- Codex adversarial review (if the openai-codex plugin is installed)
@@ -63,13 +61,24 @@ Detect: `find ~/.claude/plugins -name codex-companion.mjs 2>/dev/null | head -1`
     description: "Codex adversarial-review of PR #<n>" })
   ```
   Wait for the completion notification; read its output file (the `# Codex Adversarial Review` block).
-- **If not found**, skip Reviewer B and note in the report that this was a single-provider (Claude-only) review. Do not fail.
+- **If not found**, skip Reviewer B and note in the report that this was a single-provider (Claude + security) review. Do not fail.
 
-Run A and B in a single message so they execute concurrently; do not synthesize until both return.
+### Reviewer C -- security-reviewer agent (always)
+
+Deep security audit: secrets, input validation, auth/authz, query construction, error leakage, outdated deps.
+
+```
+Agent({ subagent_type: "security-reviewer",
+  description: "security-reviewer of PR #<n>",
+  prompt: "Audit the current branch diff for security vulnerabilities. \
+Context: <one-paragraph PR brief>. Already-rejected findings (do NOT re-flag): <list>. \
+findings-only -- do NOT implement fixes. \
+If nothing found, respond 'Clean' with the list of checks performed." })
+```
 
 ## 3. Synthesize (no judgment)
 
-Merge both outputs into one table; assign a **fix-priority** P0-P3 based on impact
+Merge all three reviewers' outputs into one table; assign a **fix-priority** P0-P3 based on impact
 (what breaks if ignored) and immediacy (does it bite this PR).
 
 Add an **annotation-freshness lens** before merging: for each modified file that
