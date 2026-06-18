@@ -115,7 +115,7 @@ jobs:
 
       - name: Post Codex review
         if: ${{ steps.codex.outputs.final-message != '' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           CODEX_MSG: ${{ steps.codex.outputs.final-message }}
         with:
