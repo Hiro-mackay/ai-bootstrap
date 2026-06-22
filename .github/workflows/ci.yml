@@ -23,7 +23,7 @@ jobs:
       node: ${{ steps.check.outputs.node }}
       go: ${{ steps.check.outputs.go }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Detect project language
         id: check
@@ -37,7 +37,7 @@ jobs:
     if: needs.detect.outputs.node == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Detect package manager
         id: pm
@@ -100,7 +100,7 @@ jobs:
     if: needs.detect.outputs.go == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Go
         uses: actions/setup-go@v5
